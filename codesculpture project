@@ -1,0 +1,3991 @@
+import React, { useState } from 'react';
+import "../App.css";
+import { Link, useHistory } from "react-router-dom";
+import { Avatar, Dropdown, Menu } from 'antd';
+import { auth } from "../config/fire";
+import { signout } from '../helpers/auth';
+import styled from "styled-components";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
+import CreateMeetModal from '../components/Modals/createMeetModal';
+import Logo from '../images/favicon.png';
+export const Container = styled.div`
+width:100%;
+display:flex;
+padding: 1.5rem 2rem;
+align-items: center;
+justify-content: space-between;
+.ant-dropdown {
+  width: 450px !important;
+  padding:0px 10px !important;
+  border-radius: 15px !important;
+}
+.ant-dropdown-menu{
+  width: 450px !important;
+  border-radius: 15px !important;
+}
+.logo{
+  font-weight: 700;
+  font-size: 22px;
+  font-family: cursive;
+  color: black;
+}
+a{
+  font-size: 15px;
+  font-weight: 500;
+  color: #232323c7;
+  &:hover {
+    color: #232323c7;
+    text-decoration: none;
+  }
+}
+.meet-link{
+  margin:0 !important;
+  font-size: 15px;
+  font-weight: 500;
+  color: #232323c7;
+  padding: 0px 15px;
+  cursor:pointer;
+}
+`;
+export const LinkContainer = styled.div`
+display:flex;
+align-items: center;
+.profile_link{
+  padding:0px 15px;
+}
+.profile_picture{
+  display:flex;
+  align-items: center;
+  justify-content:center;
+}
+.register-button{
+  box-shadow: rgb(50 50 93 / 9%) 5px 10px 10px -5px, rgb(0 0 0 / 30%) 0px 8px 16px -8px;
+  padding: 7px 25px;
+  border-radius: 25px;
+  border-top: 1px solid #0000000a;
+  margin-right: 20px;
+  cursor: pointer;
+}
+.avatar-user{
+  // background-image: linear-gradient(to right,#41d4b3, #067D68);
+  margin-left: 10px;
+}
+`;
+export const MenuContainer = styled(Menu)`
+width: 250px !important;
+.user_dropdown{
+  display:flex;
+  align-items: center;
+}
+a{
+  text-decoration: none;
+}
+.ant-avatar {
+  display:flex;
+  align-items: center;
+  justify-content:center;
+}
+`;
+export const UserDetails = styled.div`
+padding-left: 12px;
+padding-top: 10px;
+p{
+  font-size: 14px; 
+  line-height: 5px;
+}
+`;
+export const UserDetailsCard = styled.div`
+display: flex;
+flex-direction: column;
+font-family: Roboto;
+border-radius: 15px;
+width:100%;
+p{
+  margin-bottom: 5px;
+}
+.fa-icon {
+  margin-right:10px;
+}
+.ant-dropdown-menu-item{
+padding-left:20px;
+text-align:center;
+}
+.ant-dropdown-menu-item:hover {
+  background-color: #e6e6e629 !important;
+}
+.ant-dropdown-menu-title-content {
+  display: flex;
+  align-items: center;
+}
+.welcome-text{
+font-size: 15px;
+font-weight: 600;
+color: rgb(64 64 64);
+}
+.user-email{
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000ad;
+}
+.logout-btn{
+  font-size: 14px;
+  font-weight: 500;
+  background-image: linear-gradient(to right,#41d4b3,#067D68);
+  width: 100%;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  margin:10px 0px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px;
+}
+.prof-names{
+display: flex;
+flex-direction: column;
+align-items: baseline;
+padding-left:10px;
+}
+.hover-style{
+  padding-left: 10px;
+  color: #000000ad;
+  margin-bottom: 5px;
+  a{
+    color: #000000ad;
+  }
+  &:hover{
+  font-size: 15px;
+  font-weight: 600;
+}
+}
+`;
+export const EditButton = styled.button`
+border: none;
+outline: none;
+border-radius: 5px;
+width: 180px;
+height: 40px;
+font-size: 15px;
+font-weight: 600;
+background-image: linear-gradient(to right,#41d4b3, #067D68);
+color: white;
+margin-top: 10px;
+box-shadow: rgb(136 165 191 / 48%) 6px 2px 16px 0px, rgb(255 255 255 / 80%) -6px -2px;
+`;
+const menu = (
+  <MenuContainer>
+    {
+      auth().currentUser &&
+      <UserDetailsCard>
+        <Menu.Item>
+          <Avatar size={50}
+            src='https://cliply.co/wp-content/uploads/2020/10/442010811_HEADPHONES_AVATAR_3D_400.png' />
+          <div className='prof-names'>
+            <p className='welcome-text'>
+              {auth().currentUser.displayName}</p>
+            <p className='user-email'>{auth().currentUser.email}</p>
+          </div>
+        </Menu.Item>
+        <Menu.Item>
+          <Link to='/UserProfile' target="_blank" className='user-email hover-style'>Edit Profile</Link>
+        </Menu.Item>
+        <Menu.Item>
+          <p className='logout-btn' onClick={() => { auth().signOut() }} >
+            <FontAwesomeIcon className='fa-icon' icon={faSignOutAlt} />
+            Logout
+          </p>
+        </Menu.Item>
+      </UserDetailsCard>
+    }
+  </MenuContainer>
+);
+const Head = (props) => {
+  const  [ modalVisibility ,  setModalvisibility ]  =  useState ( false ) ;
+  let history = useHistory();
+  return (
+    <Container>
+      <div>
+        <Link className='logo' to="/">
+          <img src={Logo}></img>
+          <text>Ticqu</text>
+        </Link>
+      </div>
+      <LinkContainer>
+      {
+        auth().currentUser && 
+        <>
+        <button onClick={() => auth().signOut()}>Logout</button>
+        <button onClick={() => signout() }>Logout</button>
+        </>
+      }
+        {
+          auth().currentUser &&
+          <>
+            <Link className='profile_link' >Blog</Link>
+            <Link to='/MyEvents' className='profile_link'>MyEvents</Link>
+          </>
+        }
+        {
+          !auth().currentUser && <Link onClick={() => props.HandleActionSelection('login')}
+            className='profile_link' style={{ marginRight: '20px' }}>LogIn</Link>
+          !auth().currentUser && <p onClick={() => props.HandleActionSelection('login')}
+            className='meet-link register-button' style={{ marginRight: '20px' }}>LogIn</p>
+        }
+        {
+          !auth().currentUser && <p className='meet-link register-button'
+            onClick={() => props.HandleActionSelection('register')}
+          >Register</p>
+        }
+        {
+          auth().currentUser &&
+          <Dropdown overlay={menu} placement="bottomLeft"
+            // trigger={['click']}
+            className='profile_link profile_picture'>
+              
+            <Avatar className='avatar-user' size={50}
+              src="https://cliply.co/wp-content/uploads/2020/10/442010811_HEADPHONES_AVATAR_3D_400.png"
+            />
+          </Dropdown>
+        }
+      </LinkContainer>
+      {
+        modalVisibility  &&
+        <CreateMeetModal
+          visibility = { modalVisibility }
+          onClose={() => setModalvisibility(false)}
+        />
+      }
+    </Container >
+  );
+}
+export default Head;
+file2:
+
+src/components/Modals/createMeetModal.js;
+import React, { Component } from "react";
+import { v1 as uuid } from "uuid";
+import { message, Modal } from 'antd';
+import { db, auth } from '../../config/fire';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCopy } from '@fortawesome/free-solid-svg-icons'
+import { Form, Button, Tab, Tabs } from "react-bootstrap";
+import {
+    CreateRoomTab,
+    // Profile, ProfileSection 
+} from '../../helpers/styles';
+import { ModalButton } from './styles';
+import Loader from "../Loader";
+export default class CreateMeetModal extends Component {
+    constructor(props) {
+        super(props);
+        document.title = "Create Meet"
+        var  today  =  new  Date ( ) ;
+        where today_hours = today.getHours();
+        where today_mins = today.getMinutes();
+        where today_date = today.getDate();
+        var today_month = today.getMonth() + 1; //As January is 0.
+        where today_year = today.getFullYear();
+        if (today_hours < 10) today_hours = '0' + today_hours;
+        if (today_mins < 10) today_mins = '0' + today_mins;
+        var  today_time = today_hours + ':' + today_mins;
+        console.log(today_time);
+        if (today_date < 10) today_date = '0' + today_date;
+        if (today_month < 10) today_month = '0' + today_month;
+        var currentDate = today_year + '-' + today_month + '-' + today_date;
+        this.state = {
+            user: auth().currentUser,
+            error: '',
+            checked: false,
+            schecked: false,
+            title: '',
+            stitle: '',
+            id: uuid(),
+            id: uuid().slice(14),
+            tdate: currentDate,
+            ttime: today_time,
+            dtime: today_time,
+            ddate: currentDate,
+            today: false,
+            allowuser: [],
+            sallowuser: [],
+            allowu: '',
+            loading: true,
+            sallowu: '',
+            uchecked: false,
+            suchecked: false,
+        }
+        this.createnow = this.createnow.bind(this);
+        this.schedule = this.schedule.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.handlecheck = this.handlecheck.bind(this);
+        this.shandlecheck = this.shandlecheck.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
+        this.shandleKeyPress = this.shandleKeyPress.bind(this);
+        this.handleuserinp = this.handleuserinp.bind(this);
+        this.shandleuserinp = this.shandleuserinp.bind(this);
+        this.uhandlecheck = this.uhandlecheck.bind(this);
+        this.suhandlecheck = this.suhandlecheck.bind(this);
+    }
+    componentDidMount() {
+        this.setState({
+            loading: false,
+        })
+    }
+    shandlecheck() {
+        this.setState({
+            schecked: !this.state.schecked
+        })
+    }
+    handlecheck() {
+        this.setState({
+            checked: !this.state.checked
+        })
+    }
+    suhandlecheck ( )  {
+        if (this.state.suchecked) {
+            this.setState({
+                sallowuser: []
+            })
+        }
+        this.setState({
+            suchecked: !this.state.suchecked
+        });
+    }
+    uhandlecheck ( )  {
+        this.setState({
+            uchecked: !this.state.uchecked
+        })
+    }
+    handleKeyPress(event) {
+        if (event.which === 32) {
+            if (this.state.allowu !== null) {
+                console.log(this.state.allowu);
+                this.state.allowuser.push(this.state.allowu);
+                this.setState({
+                    allowu: ''
+                })
+            }
+        }
+    }
+    shandleKeyPress(event) {
+        if (event.which === 32) {
+            if (this.state.sallowu !== null) {
+                console.log(this.state.allowu);
+                this.state.sallowuser.push(this.state.sallowu);
+                this.setState({
+                    sallowu: ''
+                })
+            }
+        }
+    }
+    handleuserinp(event) {
+        this.setState({
+            allowu: event.target.value
+        });
+    }
+    shandleuserinp(event) {
+        this.setState({
+            sallowu: event.target.value
+        });
+    }
+    handleChange(event) {
+        this.setState({
+            [event.target.id]: event.target.value
+        });
+    }
+    async schedule(event) {
+        this.setState({
+            loading: true,
+            error: ''
+        })
+        event.preventDefault();
+        if(this.state.stitle == null){
+            this.setState({
+                error: 'Please Type Meeting Title'
+            })
+        return;
+        }
+        if (this.state.tdate == this.state.ddate) {
+            this.setState({
+                today: true,
+            })
+        }
+        if (this.state.schecked == true && this.state.suchecked) {
+            if (this.state.srompwd == '' && !this.state.sallowuser.length) {
+                console.log("Null")
+                this.setState({
+                    error: 'Please Type Password'
+                })
+            }
+            else if (this.state.srompwd !== null && this.state.srompwd.length <= 8) {
+                try {
+                    this.setState({ error: '' })
+                    const pushdb = db().ref('users/' + this.state.user.uid + '/scheduled/');
+                    pushdb.push({
+                        'id': this.state.id,
+                        'auth': true,
+                        'date': this.state.ddate,
+                        'time': this.state.dtime,
+                        'users': this.state.sallowuser,
+                        allow: true,
+                        status: 'PEND',
+                        title: this.state.stitle,
+                        'hname': this.state.user.displayName,
+                        'pass': this.state.srompwd,
+                        'host': this.state.user.uid,
+                    }).then(() => {
+                        this.setState({
+                            loading: false,
+                        });
+                        message.success({
+                            content: 'Your '+this.state.stitle+' is Successfully Scheduled',
+                            duration: [3]
+                        })
+                        this.props.success();
+                    })
+                    console.log('Done');
+                }
+                catch (error) {
+                    this.setState({
+                        loading: false,
+                        error: error.message
+                    })
+                }
+            }
+            else {
+                this.setState({
+                    error: 'Password Upto 8 char only'
+                })
+            }
+        }
+        else if (this.state.schecked == false && this.state.suchecked == true) {
+            if (this.state.sallowuser !== null) {
+                try {
+                    this.setState({
+                        error: ''
+                    })
+                    const pushdb = db().ref('users/' + this.state.user.uid + '/scheduled/');
+                    pushdb.push({
+                        id: this.state.id,
+                        auth: false,
+                        users: this.state.sallowuser,
+                        time: this.state.dtime,
+                        allow: true,
+                        status: 'PEND',
+                        title: this.state.stitle,
+                        'hname': this.state.user.displayName,
+                        date: this.state.ddate,
+                        host: this.state.user.uid,
+                    }).then(() => {
+                        this.setState({
+                            loading: false,
+                        });
+                        message.success({
+                            content: 'Your '+this.state.stitle+' is Successfully Scheduled',
+                            duration: [3]
+                        })
+                        this.props.success();
+                    })
+                    console.log('Done');
+                }
+                catch (error) {
+                    this.setState({
+                        error: error.message,
+                        loading: false,
+                    })
+                }
+            }
+            else {
+                this.setState({
+                    error: "There is No Users added in Allowed User"
+                })
+            }
+        }
+        else if (this.state.schecked == true && this.state.suchecked == false) {
+            if (this.state.srompwd !== null && this.state.srompwd.length <= 8) {
+                try {
+                    this.setState({
+                        error: ''
+                    })
+                    const pushdb = db().ref('users/' + this.state.user.uid + '/scheduled/');
+                    pushdb.push({
+                        id: this.state.id,
+                        auth: true,
+                        time: this.state.dtime,
+                        date: this.state.ddate,
+                        status: 'PEND',
+                        title: this.state.stitle,
+                        'hname': this.state.user.displayName,
+                        allow: false,
+                        pass: this.state.srompwd,
+                        host: this.state.user.uid,
+                    }).then(() => {
+                        this.setState({
+                            loading: false,
+                        });
+                        message.success({
+                            content: 'Your '+this.state.stitle+' is Successfully Scheduled',
+                            duration: [3]
+                        })
+                       this.props.success();
+                    })
+                    console.log('Done');
+                }
+                catch (error) {
+                    this.setState({
+                        error: error.message,
+                        loading: false,
+                    })
+                }
+            }
+            else {
+                this.setState({
+                    error: "Pass is More than 8"
+                })
+            }
+        }
+        else if (this.state.schecked == false && this.state.suchecked == false) {
+            try {
+                this.setState({
+                    error: ''
+                })
+                const pushdb = db().ref('users/' + this.state.user.uid + '/scheduled/');
+                pushdb.push({
+                    id: this.state.id,
+                    auth: false,
+                    time: this.state.dtime,
+                    date: this.state.ddate,
+                    status: 'PEND',
+                    title: this.state.stitle,
+                    'hname': this.state.user.displayName,
+                    allow: false,
+                    host: this.state.user.uid,
+                }).then(() => {
+                    this.setState({
+                        loading: false,
+                    });
+                    message.success({
+                        content: 'Your '+this.state.stitle+' is Successfully Scheduled',
+                        duration: [3]
+                    })
+                    this.props.success();
+                })
+                console.log('Done');
+            }
+            catch (error) {
+                this.setState({
+                    error: error.message,
+                    loading: false,
+                })
+            }
+        }
+        else {
+            this.setState({
+                error: 'Somethinng wRONG'
+            })
+        }
+        //   if(currentDate > this.state.ddate ){ 
+        //       console.log('Past');
+        //     }
+        //   else if(currentDate < this.state.ddate){ 
+        //       console.log('Future');
+        //     }
+        //   else if(currentDate == this.state.ddate) {
+        //       console.log('Today');
+        //       if(today_time > this.state.dtime){
+        //           console.log('Past Time');
+        //       }
+        //       else if(today_time < this.state.dtime){
+        //           console.log('There is Little Time');
+        //       }
+        //       else if(today_time == this.state.dtime){
+        //           console.log('Now!');
+        //       }
+        //     }
+    }
+
+    async createnow(event) {
+        event.preventDefault();
+        this.setState({
+            loading: true
+        })
+        if(this.state.title == ''){
+            this.setState({
+                error: 'Please Type Meeting Title'
+                error: 'Please Type Meeting Title',
+                loading: false
+            })
+            return;
+        }
+        if (this.state.checked == true && this.state.uchecked) {
+            if (this.state.rompwd == null && this.state.allowuser == null) {
+                console.log("Null")
+                this.setState({
+                    error: 'Please Type Password'
+                    error: 'Please Type Password',
+                    loading: false,
+                })
+            }
+            else if (this.state.rompwd && this.state.rompwd !== null && this.state.rompwd.length <= 8) {
+                try {
+                    this.setState({ error: '' })
+                    const pushdb = db().ref('all-rooms/' + this.state.id);
+                    pushdb.set({
+                        'id': this.state.id,
+                        'auth': true,
+                        'users': this.state.allowuser,
+                        allow: true,
+                        status: 'ACTIVE',
+                        title: this.state.title,
+                        'hname': this.state.user.displayName,
+                        'pass': this.state.rompwd,
+                        'host': this.state.user.uid,
+                    }).then(() => {
+                        window.location.replace(`/room/${this.state.id}`);
+                    });
+                }
+                catch (error) {
+                    this.setState({
+                        error: error.message
+                        error: error.message,
+                        loading: false,
+                    })
+                }
+            }
+            else {
+                this.setState({
+                    error: 'Password Upto 8 char only'
+                    error: 'Password Upto 8 char only',
+                    loading: false,
+                })
+
+            }
+        }
+        else if (this.state.checked == false && this.state.uchecked == true) {
+            if (this.state.allowuser !== null) {
+                try {
+                    this.setState({
+                        error: ''
+                    })
+                    const pushdb = db().ref('all-rooms/' + this.state.id);
+                    pushdb.set({
+                        id: this.state.id,
+                        auth: false,
+                        users: this.state.allowuser,
+                        status: 'ACTIVE',
+                        allow: true,
+                        title: this.state.title,
+                        'hname': this.state.user.displayName,
+                        host: this.state.user.uid,
+                    }).then(() => {
+                        window.location.replace(`/room/${this.state.id}`);
+                    })
+                }
+                catch (error) {
+                    this.setState({
+                        error: error.message
+                        error: error.message,
+                        loading: false,
+                    })
+                }
+
+            }
+        }
+        else if (this.state.checked == true && this.state.uchecked == false) {
+            if (this.state.rompwd == null) {
+                console.log("Null")
+                this.setState({
+                    error: 'Please Type Password'
+                    error: 'Please Type Password',
+                    loading: false,
+                })
+            }
+            else if (this.state.rompwd !== null && this.state.rompwd.length <= 8) {
+                try {
+                    this.setState({ error: '' })
+                    const  pushdb  =  db ().ref('all-rooms/' + this.state.id);
+                    pushdb.set({
+                        'id': this.state.id,
+                        'auth': true,
+                        'pass': this.state.rompwd,
+                        allow: false,
+                        title: this.state.title,
+                        status: 'ACTIVE',
+                        'hname': this.state.user.displayName,
+                        'host': this.state.user.uid,
+                    }).then(() => {
+                        window.location.replace(`/room/${this.state.id}`);
+                    })
+                }
+                catch (error) {
+                    this.setState({
+                        error: error.message
+                        error: error.message,
+                        loading: false,
+                    })
+                }
+            }
+            else {
+                this.setState({
+                    error: 'Password Upto 8 char only'
+                })
+            }
+        }
+        else if (this.state.checked == false && this.state.uchecked == false) {
+            try {
+                this.setState({
+                    error: ''
+                })
+                const pushdb = db().ref('all-rooms/' + this.state.id);
+                pushdb.set({
+                    id: this.state.id,
+                    status: 'ACTIVE',
+                    auth: false,
+                    'hname': this.state.user.displayName,
+                    allow: false,
+                    title: this.state.title,
+                    host: this.state.user.uid,
+                }).then(() => {
+                    window.location.replace(`/room/${this.state.id}`);
+                })
+            }
+            catch (error) {
+                this.setState({
+                    error: error.message
+                    error: error.message,
+                    loading: false,
+                })
+            }
+
+        }
+
+        else {
+            this.setState({
+                error: 'Somethinng wRONG'
+                error: 'Somethinng wRONG',
+                loading: false,
+            })
+        }
+    }
+
+    copyCodeToClipboard = (option) => {
+        const copykey = 'copy';
+        if (option === 'scheduleId') {
+            const el = this.scheduleId
+            el.select()
+            document.execCommand("copy")
+            el.select();
+            document.execCommand("copy");
+            message.success({
+                content: 'Your Meeting ID Was Succefully Copied',
+                duration: [0.5],
+                key: copykey,
+            })
+        } else {
+            const meetid = this.meetingId
+            meetid.select()
+            document.execCommand("copy")
+            message.success({
+                content: 'Your Meeting ID was Successfully Copied',
+                duration: [0.5],
+                key: copykey,
+            })
+        }
+    }
+
+    render() {
+        return (
+            <Modal
+                visible={this.props.visibility}
+                onCancel={this.props.onClose}
+                footer={null}
+            >
+                {/* <ProfileSection> */}
+                {/* <Profile className='createRoom'> */}
+                {this.state.loading ? <Loader />
+                    :
+                    <CreateRoomTab>
+                        <Tabs defaultActiveKey="start_now" transition={false} id="noanim-tab-example">
+                            <Tab eventKey="start_now" title="Start Now">
+                                <Form className="auth-form">
+                                <Form onSubmit={e => {if(e.keyCode == 13) return false}} className="auth-form">
+                                    <Form.Group>
+                                        <Form.Label>Meeting Id</Form.Label>
+                                        <div style={{ position: 'relative' }}>
+                                            <Form.Control name="remail" readOnly value={this.state.id}
+                                                id="romid" type="text" placeholder="Enter RoomID"
+                                                style={{ paddingRight: '30px' }}
+                                                ref={(meetingId) => this.meetingId = meetingId}
+                                            />
+                                            <FontAwesomeIcon className='fa-icon' icon={faCopy}
+                                                onClick={() => this.copyCodeToClipboard('meetingId')}
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '10px',
+                                                    bottom: '13px',
+                                                }} />
+                                        </div>
+                                    </Form.Group>
+                                    <Form.Group>
+                                    <Form.Label>Meeting Title</Form.Label>
+                                    <Form.Control name='title' onChange={this.handleChange} id='title' value={this.state.title} placeholder='Enter meeting title' />
+                                    </Form.Group>
+                                    <Form.Group controlId="formGroupCheckbox">
+                                        <Form.Check type="checkbox" defaultChecked={this.state.checked} onChange={this.handlecheck} label="Add password" />
+                                    </Form.Group>
+                                    {this.state.checked == true ?
+                                        <Form.Group controlId="formGroupPassword">
+                                            <Form.Label>Password</Form.Label>
+                                            <Form.Control name="rompwd" onChange={this.handleChange} value={this.state.rompwd} id="rompwd" type="password" placeholder="Password" />
+                                        </Form.Group> : <div></div>
+                                    }
+                                    <Form.Group controlId="formGroupEmail">
+                                        <Form.Group controlId="formGroupChheckbox">
+                                            <Form.Check type="checkbox" defaultChecked={this.state.uchecked} onChange={this.uhandlecheck} label="Allowed User" />
+                                        </Form.Group>
+                                        <text>{this.state.allowuser.map((i) => <li>{i}</li>)}</text>
+                                    </Form.Group>
+                                    {this.state.uchecked == true ?
+                                        <Form.Group>
+                                            <Form.Label>Users Allowed</Form.Label>
+                                            <Form.Control name="allow-users" onKeyPress={this.handleKeyPress} onChange={this.handleuserinp} value={this.state.allowu} id="allow-users" type="text" placeholder="Enter the user email one by one"></Form.Control>
+                                        </Form.Group> : <div></div>}
+                                    {this.state.error ? <p className="text-danger">{this.state.error}</p> : null}
+                                    <ModalButton onClick={this.createnow} variant="primary">Start meeting</ModalButton>
+                                </Form>
+
+                            </Tab>
+                            <Tab eventKey="schedule" title="Schedule">
+                                <Form className="schedule-form">
+                                <Form onSubmit={e => {return e.key != 'Enter';}} className="schedule-form">
+                                    <Form.Group controlId="romid">
+                                        <Form.Label>Meeting Id</Form.Label>
+                                        <div style={{ position: 'relative' }}>
+                                            <Form.Control name="romid" readOnly value={this.state.id}
+                                                ref={(scheduleId) => this.scheduleId = scheduleId}
+                                                id="romid" type="text" placeholder="Enter RoomID" 
+                                                style={{ paddingRight: '30px' }} />
+                                            <FontAwesomeIcon className='fa-icon' icon={faCopy}
+                                                onClick={() => this.copyCodeToClipboard('scheduleId')}
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '10px',
+                                                    bottom: '13px',
+                                                }} />
+                                        </div>
+                                    </Form.Group>
+                                    <Form.Group>
+                                    <Form.Label>Meeting Title</Form.Label>
+                                    <Form.Control name='stitle' id='stitle' onChange={this.handleChange} value={this.state.stitle} placeholder='Enter meeting title' />
+                                    </Form.Group>
+                                    <Form.Group controlId="datepicker">
+                                        <Form.Group controlId="formGroupCheckbox">
+                                            <Form.Check type="checkbox" defaultChecked={this.state.schecked} onChange={this.shandlecheck} label="Add password" />
+                                        </Form.Group>
+                                        {this.state.schecked == true ?
+                                            <Form.Group controlId="formGroupPassword">
+                                                <Form.Label>Password</Form.Label>
+                                                <Form.Control name="srompwd" onChange={this.handleChange} value={this.state.srompwd} id="srompwd" type="password" placeholder="Password" />
+                                            </Form.Group> : <div></div>
+                                        }
+                                        <Form.Group controlId="formGroupChheckbox">
+                                            <Form.Check type="checkbox" defaultChecked={this.state.suchecked} onChange={this.suhandlecheck} label="Allowed User" />
+                                        </Form.Group>
+                                        <text>{this.state.sallowuser.map((i) => <li>{i}</li>)}</text>
+                                        {this.state.suchecked == true ?
+                                            <Form.Group>
+                                                <Form.Label>Users Allowed</Form.Label>
+                                                <Form.Control name="sallow-users" onKeyPress={this.shandleKeyPress} onChange={this.shandleuserinp} value={this.state.sallowu} id="sallow-users" type="text" placeholder="Enter the user email one by one"></Form.Control>
+                                            </Form.Group> : <div></div>}
+                                        {this.state.error ? <p className="text-danger">{this.state.error}</p> : null}
+                                        <Form.Label>Date</Form.Label>
+                                        <Form.Control min={this.state.tdate} name="ddate" id="ddate" type="date" max="2021-08-10" onChange={this.handleChange} value={this.state.ddate}></Form.Control>
+                                        <Form.Control min={this.state.today ? this.state.ttime : ''} name="dtime" id="dtime" type="time" onChange={this.handleChange} value={this.state.dtime}></Form.Control>
+                                    </Form.Group>
+                                    <ModalButton onClick={this.schedule}>Schedule</ModalButton>
+                                </Form>
+                            </Tab>
+                        </Tabs>
+                    </CreateRoomTab>
+                }
+                {/* </Profile> */}
+                {/* </ProfileSection> */}
+            </Modal>
+        );
+    }
+};
+file3
+src/components/Modals/joinMeetingModal.js
+
+import React from 'react';
+import { Modal } from 'antd';
+import React, { useRef, useState } from 'react';
+import { message, Modal } from 'antd';
+import Loader from '../Loader'
+import {Container,ModalButton} from './styles';
+import {useHistory} from 'react-router-dom';
+import {db} from '../../config/fire.js';
+
+
+const JoinMeetingModal = (props) => {
+    function  hi ( ) {
+        props.hi('Bruh');
+    const [id, setid] = useState('');
+    const btnref = useRef();
+    let history = useHistory();
+    const [load, setload] = useState(false);
+
+    const [error, seterror] = useState('');
+    const  erkey  =  'error' ;
+
+
+    function handleInputChange(event) {
+        setid(event.target.value);
+        if(id !== '' && error === 'Type Something Bro'){
+
+                seterror('')
+
+
+        }
+    }
+    function join(id){
+
+        if(id === ''){
+            seterror('Type Something Bro');
+            return;
+        }
+        setload(true);
+        seterror('')
+        btnref.current.disabled = true;
+
+        console.log('https://project5-frontend.netlify.app/room/'.length);
+
+        var  sliced  =  id ;
+
+        if(sliced.includes("https")){
+            if(sliced.length < 43){
+                seterror('The Link is Broken Check Again')
+                btnref.current.disabled = false;
+                setload(false);
+                return;
+            }
+            sliced = sliced.slice(43, id.length)
+
+        }
+
+
+            const roomref = db().ref('all-rooms/'+sliced);
+
+            try{
+            roomref.once('value', snapshot =>{
+                if(snapshot.exists()){
+                    const data = snapshot.val();
+                    if(data.status === 'PEND'){
+                        seterror("The Meeting is Not Started Yet");
+                        setload(false);
+                        btnref.current.disabled = false;
+                        return;
+                    }
+                    else if(data.status === 'ACTIVE'){
+                        seterror('');
+                        history.push({
+                            pathname: "/room/"+sliced,
+
+                        })
+
+                    }
+
+                }
+                else{
+                    if(id.includes('https')){
+                        message.error({
+                            content: 'Recheck the Link is Correct',
+                            duration: [2],
+                            key: erkey,
+                        })
+                    }
+                    seterror("There is No Meeting You're Looking For...");
+                    setload(false);
+                    btnref.current.disabled = false;
+                    return;
+                }
+
+            });
+        }
+        catch(error){
+            setload(false);
+            seterror("Somethinng Problem");
+            btnref.current.disabled = false;
+        }
+
+
+    }
+
+    return (
+        <>
+            <Modal
+                visible={props.visibility}
+                onCancel={props.onClose}
+                width={450}
+                footer={null}
+                centered
+                >
+                <Container>
+                    <input type='text' placeholder='Enter your meeting id' className='input-id'/>
+                    <ModalButton onClick={() => hi()}>Join now</ModalButton>
+                  {/* {load ? <Loader /> : <> */}
+                    <input type='text' onChange={handleInputChange} placeholder='Enter your meeting id' className='input-id' value={id}/>
+                    <ModalButton ref={btnref} onClick={() => join(id)}>{load ? 'Loading..' : 'Join now'}</ModalButton>
+                    {error ? <strong> <p className="text-danger">{error}</p></strong> : null}
+                 {/* </> } */}
+                </Container>
+            </Modal>
+        </>
+    );
+};
+export default JoinMeetingModal;
+
+file4:
+src/components/RoomMain.jsx
+
+import React, { useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
+import Peer from "simple-peer";
+import Loader from "./Loader";
+import { ScreenAcc } from "./Modals/ScreenAcc";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+    faPaperclip, faPaperPlane,
+    faTimes ,  faCloudUploadAlt ,  faMicrophone ,
+    faMicrophoneSlash,
+    faVideo, faVideoSlash,
+    faRecordVinyl, faPhone,
+    // faStopCircle, faCommentDots,
+    faUsers ,
+    faArrowUp, faEllipsisH, faInfo,
+} from '@fortawesome/free-solid-svg-icons'
+import Draggable from 'react-draggable';
+import styled from "styled-components";
+import { auth, db, storage } from "../config/fire";
+import { useHistory } from "react-router-dom";
+import { Tooltip, Progress, Avatar, message, Button, Layout, Menu, Dropdown, Modal } from 'antd';
+///////icons & images  ////////
+import {
+    Audio Muted Outlined ,
+    // AudioOutlined, 
+    UserOutlined
+} from '@ant-design/icons';
+import VideoOff from '../images/videoOff.svg';
+import { VedioContainer, CallControlWrapper, UserName, MessageBox, ScreenSection, MessageButtonContainer } from './styles';
+import { ScreenReq } from "./Modals/ScreenReq";
+import socket from "socket.io-client/lib/socket";
+const { Sider, Content } = Layout;
+export const Container = styled(Layout)`
+    height: 100vh;
+    width: 100%;
+    overflow:hidden;
+    background:#fff;
+    position:relative;
+  
+    @media only screen and (max-width: 728px) {
+        height:100%;
+    }
+    
+`;
+export const VideoControl = styled.div`
+    display: flex;
+    height: 100%;
+    width:80%;
+    overflow:hidden;
+    overflow-y:auto;
+    flex-direction:column;
+    align-items: center;
+    padding:20px;
+    .anticon svg {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+    }
+    img {
+        height: 30px;
+        width: 30px;
+    }
+    .activeUsers {
+        display: flex;
+        flex-direction:column;
+        height:30% !important;
+        .userName{
+            display: flex;
+            flex-direction:row;
+        }
+        .anticon svg {
+            border: 2px solid #000;
+            width: 35px;
+            border-radius: 25px;            
+            margin-right: 10px;
+            height: 35px;
+            padding: 6px;       
+        }
+        p{
+            text-transform:uppercase;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+    }
+`;
+export const OptionContainer = styled.div`
+    width:50%;
+    position:absolute;
+    bottom:25px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: rgb(50 50 105 / 15%) 0px 2px 5px 0px, rgb(0 0 0 / 5%) 0px 1px 1px 0px;
+    border-radius: 10px;
+    .anticon svg {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+    }
+    img {
+        height: 25px;
+        width: 25px;
+    }
+    .iconContainer{
+        background-image: linear-gradient(to right,#41d4b3,#067D68);
+        color: white;
+        border-radius: 50%;
+        padding: 5px;
+        font-size: 14px;
+        width: 32px; 
+        height:32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &:hover{
+        transform: translateY(-3px);
+        box-shadow: 0 4px 17px rgb(0 0 0 / 35%);
+        }
+}
+`;
+const StyledVideo = styled.video`
+    width:90%;
+    border-radius: 5px;
+`;
+const StyledImage = styled.img`
+width:90%;
+border-radius: 5px;
+`;
+const Option = styled.div`
+    cursor:pointer;
+`;
+const AllUsersVideo = styled.div`
+    position: relative;
+    padding-top: 20px;
+    // flex-basis: 23%;
+    margin: 5px;
+`;
+const  Sidebar  =  styled ( Pages ) `
+max-width: 25% !important;
+min-width: 25% !important;
+width: 25% !important;
+box-shadow: rgb(50 50 105 / 15%) 0px 2px 5px 0px, rgb(0 0 0 / 5%) 0px 1px 1px 0px;
+background: #ffffff;
+padding:15px;
+.title{
+    font-size: 15px;
+    padding-top: 5px;
+    font-weight: 500;
+    font-family: 'Roboto', sans-serif;
+    }
+    .close-container{
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    .fa-icon {
+        color: #505050ad;
+        font-size: 15px;
+        cursor:pointer;
+    }
+    }
+    .participant-list{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        padding:5px 0px;
+        p{
+            margin:0 !important;
+            font-family: Roboto;
+            font-size: 15px;
+            font-weight: 500;
+            color: rgba(35,35,35,0.78);
+        }
+        span{
+            padding-left:25px;
+            color: rgb(10 131 109);
+        }
+    }
+`;
+const MenuDetail = styled.p`
+    font-family: Roboto;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgb(35 35 35 / 93%);
+    margin: 0 !important;
+    cursor: pointer; 
+ `;
+const ModalContainer = styled.div`
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ flex-direction: column;
+ width: 100%;
+ padding: 1rem;
+ p{
+    font-family: Roboto;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgb(35 35 35 / 93%);
+    // margin: 0 !important; 
+ }
+ .modal-icon-div{
+    background-image: linear-gradient(to right,#41d4b3,#067D68);
+    color: white;
+    border-radius: 50%;
+    padding: 5px;
+    font-size: 16px;
+    width: 40px; 
+    height:40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+ }
+ `;
+const UserInitLogoDiv = styled.div`
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    p{
+    color: white;
+    margin:0 !important;
+    font-size: 40px;
+    font-weight: 500;
+    cursor:pointer;
+    }
+    `;
+const DraggableDiv = styled.div`
+    right: 10px;
+    bottom: 15%;
+    z-index: 4;
+    position: absolute;
+    width: 25%;
+    .fa-icon {
+    position: absolute;
+    color: #ffffff66;
+    right: 37px;
+    top: 10px;
+    font-size: 15px;
+    }
+    `;
+const Video = (props) => {
+    const UserInitLogoDiv = styled.div`
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    p{
+    color: white;
+    margin:0 !important;
+    font-size: 40px;
+    font-weight: 500;
+    cursor:pointer;
+    }
+    `;
+    const ref = useRef();
+    const [muted, setmuted] = useState(props.vid);
+    let stream;
+    let screen;
+    let  avatarapi  =  'https://eu.ui-avatars.com/api/?'
+   
+    useEffect(() =>{
+        props.peer.on('stream', stream => { 
+            ref.current.srcObject  = stream
+            
+        
+       });
+       
+    }, []);
+    // useEffect(() => {
+    //     if(props.vid == true){
+    //         setmuted(true)
+    //     }
+    //     else if(props.vid == false){
+    //         setmuted(false);
+    //     }
+        
+    //}, [props.vid])
+     
+    return (
+        
+        <StyledVideo style playsInline autoPlay ref={ref} />
+       
+     
+          );
+}
+const videoConstraints = {
+    height: window.innerHeight / 2,
+    width: window.innerWidth / 2
+};
+const Roomi = (props) => {
+    const [peers, setPeers] = useState([]);
+    const [collapsed, setCollapsed] = useState(false);
+    const socketRef = useRef();
+    const hangref = useRef(null);
+    const [hangupscr, sethangupscr] = useState(false);
+    const [reqscr, setscr] = useState(false); //Req Modal For Screen Share
+    const [accscr, setaccscr] = useState(false); //Accepting Screen For Screen Share(Host)
+    const [listacc, setlistacc] = useState([]);
+    
+    const [acceptedreq, setacceptedreq] = useState('PEND'); // For reqscr Status
+    const [hostdisconn, sethostdisconn] = useState(false); //Whether host is disconnected Accidentally
+    const history = useHistory();
+    const [hpeers, setHPeers] = useState([]);
+    var recordedChunks = [];
+    const [recording, isRecording] = useState(false);
+    const mediaRecorder = useRef();
+    const [myName, setMyname] = useState(['You']);
+    const userVideo = useRef();
+    const peersRef = useRef([]);
+    const mypeer = useRef();
+    const host = props.host;
+    const [muted, setMuted] = useState(false);
+    const meetname = props.title;
+    const [hostended, setHostEnded] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const  [ minutes ,  setperc ]  =  useState ( ) ;
+    const [stream, setStream] = useState();
+    const [audioMuted, setAudioMuted] = useState(true);
+    const [videoMuted, setVideoMuted] = useState(true);
+    const roomID = props.roomid;
+    const [msg, setmsg] = useState("");
+    const [file, setFile] = useState(null);
+    const [listmsg, setlistmsg] = useState([]);
+    const [messageBox, setMessageBox] = useState(false);
+    let  avatarapi  =  'https://eu.ui-avatars.com/api/?' ;
+    where  hid ;
+    const [wb, setWB] = useState(false);
+    const [userListVisible, setuserListVisible] = useState(false);
+    const  [ modalVisiblity ,  setmodalVisiblity ]  =  useState ( false ) ;
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const  [ userVedioVisible ,  setuserVedioVisible ]  =  useState ( false ) ;
+    var  today  =  new  Date ( ) ;
+    const name = auth().currentUser.displayName;
+    var today_hours = today.getHours();
+    var today_mins = today.getMinutes();
+    var  today_secs  = today.getSeconds();
+    if (today_hours < 10) today_hours = '0' + today_hours;
+    if (today_mins < 10) today_mins = '0' + today_mins;
+    if (today_secs < 10) today_secs = '0' + today_secs;
+    var today_time = today_hours + ':' + today_mins;
+    useEffect(() => {
+        console.log(host);
+        console.log(roomID);
+        document.title = "Loading...";
+        var  murl  = "https://project-5backend.herokuapp.com/"
+        where  lurl  = "http://192.168.43.166:8000/"
+        socketRef.current = io.connect(murl);
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+            setStream(stream);
+            stream.getVideoTracks()[0].enabled = false;
+            stream.getAudioTracks()[0].enabled = false;
+            userVideo.current.srcObject = stream;
+            document.title = meetname;
+            socketRef.current.emit("join room", { roomID: roomID, aud: audioMuted, vid: videoMuted, uname: name });
+            socketRef.current.emit('add user', name);
+            console.log('My ID is' + socketRef.current.id);
+            if (host) {
+                socketRef.current.emit('host', socketRef.current.id);
+            }
+            const  peers  =  [ ] ;
+            const  hpeer  =  [ ] ;
+            socketRef.current.on('user list', names => {
+                names = names.filter(id => id !== names[0]);
+                setMyname(name);
+            })
+            socketRef.current.on('mutedall', payload => {
+                if (!host) {
+                    alert('Host(' + payload.muter + ') All');
+                    if (stream) {
+                        setMuted(true);
+                        setVideoMuted(true);
+                        stream.getVideoTracks()[0].enabled = false;
+                        setAudioMuted(true);
+                        stream.getAudioTracks()[0].enabled = false;
+                    }
+                }
+                for (var i = 0; i < peersRef.current.length; i++) {
+                    if (peersRef.current[i].peerID !== payload.id) {
+                        peersRef.current[i].aud = true;
+                        peersRef.current[i].vid = true;
+                    }
+                }
+                setPeers([...peersRef.current]);
+            });
+            socketRef.current.on('unmutedall', ({ muter }) => {
+                if (!host) {
+                    alert('Host(' + muter + ') Unmuted All');
+                    setMuted(false);
+                }
+            })
+            socketRef.current.on('host-id', id => {
+                console.log(id);
+                hid = id;
+                console.log('The Host is ' + id);
+                console.log(hid);
+            });
+            socketRef.current.on("all users", async users => {
+                users.forEach(userID => {
+                    const peer = createPeer(userID.id, socketRef.current.id, stream);
+                    peersRef.current.push({
+                        peerID : userID . id ,
+                        aud: userID.aud,
+                        vid : userID . vid ,
+                        uname: userID.uname,
+                        peer,
+                    });
+                    peers.push({
+                        peerID : userID . id ,
+                        aud: userID.aud,
+                        vid : userID . vid ,
+                        uname: userID.uname,
+                        peer,
+                    });
+                });
+                //    if(host){
+                //     setPeers(peers);
+                //    }
+                //     if(!host){
+                // var hindex = null;
+                //     for (var i = 0;  i < peers.length; i++){
+                //      const peer = peers[i];
+                //     if(peer.peerID === hid){
+                //         hindex = i;
+                //     }
+                //     }
+                //     if(hindex !== null){
+                //         console.log(peers[hindex]);
+                //         setPeers([peers[hindex]]);
+                //     }
+                
+                //  }
+                setPeers(peers);
+                
+            });
+            socketRef.current.on('audc', payload => {
+                if (socketRef.current.id !== payload.id) {
+                    const pe = peersRef.current.findIndex(i => i.peerID === payload.id);
+                    peersRef . current [ pe ] . aud  =  payload . aud ;
+                    setPeers([...peersRef.current]);
+                }
+            });
+            socketRef.current.on('vidc', payload => {
+                if (socketRef.current.id !== payload.id) {
+                    const pe = peersRef.current.findIndex(i => i.peerID === payload.id);
+                    peersRef . current [ pe ] . vid  =  payload . vid ;
+                    setPeers([...peersRef.current]);
+                }
+            });
+            socketRef.current.on("user joined", payload => {
+                console.log(peers.find(p => p.peerID == socketRef.current.id));
+                const peer = addPeer(payload.signal, payload.callerID, stream);
+                peersRef.current.push({
+                    peerID: payload.callerID,
+                    aud: payload.aud,
+                    vid : payload . at ,
+                    uname: payload.uname,
+                    peer,
+                });
+                const  peerObj  =  {
+                    peerID: payload.callerID,
+                    peer,
+                }
+                console.log(peerObj.peerID);
+                //   if(host){
+                //     setPeers([...peersRef.current]);
+                //   }
+                  
+                setPeers([...peersRef.current]);
+                console.log(peers);
+            });
+            socketRef.current.on("receiving returned signal", payload => {
+                const item = peersRef.current.find(p => p.peerID === payload.id);
+                item.peer.signal(payload.signal);
+            });
+            socketRef.current.on('createMessage', ({ frmsg, userfrm }) => {
+                console.log(frmsg + 'from' + userfrm, 'test');
+                setlistmsg(prevstate => [...prevstate, { message: frmsg, user: userfrm }]);
+            });
+            console.log(peers);
+        });
+        socketRef.current.on('user-left', id => {
+            const peerObj = peersRef.current.find(p => p.peerID === id);
+            if (peerObj) {
+                peerObj.peer.destroy();
+            }
+            const peerss = peersRef.current.filter(p => p.peerID !== id);
+            peersRef.current = peerss;
+            
+            // if(host){
+            // setPeers(peerss);
+            // }
+            setPeers(peers);
+           
+            console.log(peers);
+        })
+        socketRef.current.on('user leaved', ({ leaved }) => {
+            console.log(leaved + " User Disconnected");
+        });
+
+        socketRef.current.on('host-closed', (payload) => {
+
+            sethostdisconn(payload.disconn);
+
+            setHostEnded(true);
+
+            if(hangref.current){
+           hangref.current.click();
+            }
+        });
+         socketRef.current.on('requesting-host', payload =>{
+            const list ={
+                name: payload.name,
+                id: payload.id,
+            }
+            
+            setlistacc(i => [...i,list]);
+            setaccscr(true);
+        });
+        socketRef.current.on('host-accepted', payload =>{
+            setscr(true);
+            setacceptedreq('ACCEPTED');
+            
+        });
+        socketRef.current.on('host-rejected', payload =>{
+            setscr(true);
+            setacceptedreq('REJECT');
+            
+        });
+    }, []);
+    function createPeer(userToSignal, callerID, stream) {
+        const peer = new Peer({
+            initiator: true,
+            trickle: false,
+            stream,
+        });
+        const aud = audioMuted;
+        const vid = videoMuted;
+        let uname = name;
+        peer.on("signal", signal => {
+            socketRef.current.emit("sending signal", { userToSignal, aud, vid, callerID, signal, uname })
+        });
+        mypeer.current = peer;
+        return peer;
+    }
+    function addPeer(incomingSignal, callerID, stream) {
+        const peer = new Peer({
+            initiator: false,
+            trickle: false,
+            stream,
+        })
+        mypeer.current = peer;
+        peer.on("signal", signal => {
+            socketRef.current.emit("returning signal", { signal, callerID })
+        })
+        peer.signal(incomingSignal);
+        return peer;
+    }
+    function  req ( ) {
+        setacceptedreq('LOAD');
+        socketRef.current.emit('request-host', {id: socketRef.current.id, host: hid, name: name})
+    }
+    function muteall() {
+        if (host) {
+            socketRef.current.emit('isMutedAll', { from: auth().currentUser.displayName, id: socketRef.current.id });
+            setMuted(true);
+        }
+    }
+    function  unmuteall ( )  {
+        if (host) {
+            socketRef.current.emit('isUnMutedAll', { from: auth().currentUser.displayName });
+            setMuted(false);
+        }
+    }
+   function  shareScreen ( ) {
+       if(host){
+           shareScreenn();
+       }
+       else{
+           setscr(true);
+       }
+   }
+   function  acceptthereq (name, id){
+       
+       socketRef.current.emit('host-accepting', {id, name});
+       const acc = listacc.filter(i => i.id !== id);
+       if(acc.length == 0){
+           setaccscr(false);
+       }
+       setlistacc(acc);
+       console.log(acc);
+}
+   function  rejectthereq(name, id){
+    socketRef.current.emit('host-rejecting', {id, name});
+    const acc = listacc.filter(i => i.id !== id);
+    if(acc.length == 0){
+           setaccscr(false);
+       }
+    setlistacc(acc);
+   }
+    function  shareScreenn ( )  {
+        
+        navigator.mediaDevices.getDisplayMedia({ cursor: true })
+            .then(screenStream => {
+                mypeer.current.replaceTrack(stream.getVideoTracks()[0], screenStream.getVideoTracks()[0], stream)
+                userVideo.current.srcObject = screenStream
+                screenStream.getTracks()[0].onended = () => {
+                    if(!host){
+                        setacceptedreq ( 'PEND' ) ;
+                    }
+                    mypeer.current.replaceTrack(screenStream.getVideoTracks()[0], stream.getVideoTracks()[0], stream)
+                    userVideo.current.srcObject = stream
+                }
+            })
+        
+    }
+    let screenShare;
+    
+    if(mypeer.current){
+        
+         screenShare =  <span className="iconContainer" onClick={() => shareScreen()}>
+        <Tooltip title="Share your screen">
+            <Option>
+                <span style={{ background: 'white', borderRadius: '5px', padding: '0px 4px' }}>
+                    <FontAwesomeIcon icon={faArrowUp} style={{
+                        color: '#108d75',
+                        fontSize: '11px',
+                    }} />
+                </span>
+                {/* <img src={shareMyScreen} alt='shareMyScreen' /> */}
+            </Option>
+        </Tooltip>
+    </span>
+        
+    }
+    function isMobileDevice() {
+        let check = false;
+        (function (a) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda| xiino /i . test ( a )  ||  / 1207 | 6310 | 6590 | 3gso | 4thp | 50 [ 1-6 ] i | 770s | 802s | a wa | abac | ac\- ) | ai ( ko | rn ) | al ( av | ca | co ) | amoi | an ((er|oo|s ex | ny |yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
+        return check;
+    };
+    let recordControl;
+    if (isMobileDevice()) {
+        // screenShare = <></>
+        recordControl = <></>
+    }
+    function  toggleMuteVideo ( )  {
+        if (stream) {
+            if (videoMuted) {
+                socketRef.current.emit('vid', { id: socketRef.current.id, vid: false });
+            }
+            else {
+                socketRef.current.emit('vid', { id: socketRef.current.id, vid: true });
+            }
+            setVideoMuted(!videoMuted);
+            stream.getVideoTracks()[0].enabled = videoMuted;
+        }
+    }
+    let videoControl;
+    if (stream) {
+        if (!host) {
+            if (!muted) {
+                if (videoMuted) {
+                    videoControl = <span className="iconContainer" style={{ background: '#E62020' }} onClick={() => toggleMuteVideo()}>
+                        <Tooltip title="Switch on video">
+                            <Option>
+                                {/* <img src={VideoOff} alt='video_muted' /> */}
+                                <FontAwesomeIcon icon={faVideoSlash} />
+                            </Option>
+                        </Tooltip>
+                    </span>
+                } else {
+                    videoControl = <span className="iconContainer" onClick={() => toggleMuteVideo()}>
+                        <Tooltip title="Switch off video">
+                            <Option>
+                                { / * <img src = {VideoOn} alt = 'video' /> * / }
+                                <FontAwesomeIcon icon={faVideo} />
+                            </Option>
+                        </Tooltip>
+                    </span>
+                }
+            }
+            else if (muted) {
+                if (!host) {
+                    videoControl = <span disabled className="iconContainer" onClick={() => alert('All Are Muted')}>
+                        <Option>
+                            <Tooltip title="Switch on video">
+                                <img src={VideoOff} alt='video_muted' />
+                            </Tooltip>
+                        </Option>
+                    </span>
+                } else if (host) {
+                }
+            }
+            if (videoMuted) {
+                videoControl = <span className="iconContainer" style={{ background: '#E62020' }} onClick={() => toggleMuteVideo()}>
+                    <Option>
+                        <Tooltip title="Switch on video">
+                            <FontAwesomeIcon icon={faVideoSlash} />
+                            {/* <img src={VideoOff} alt='video_muted' /> */}
+                        </Tooltip>
+                    </Option>
+                </span>
+            } else {
+                videoControl = <span className="iconContainer" onClick={() => toggleMuteVideo()}>
+                    <Tooltip title="Switch off video">
+                        <Option>
+                            <FontAwesomeIcon icon={faVideo} />
+                            { / * <img src = {VideoOn} alt = 'video' /> * / }
+                        </Option>
+                    </Tooltip>
+                </span>
+            }
+        }
+        else if (host) {
+            if (videoMuted) {
+                videoControl = <span className="iconContainer" style={{ background: '#E62020' }} onClick={() => toggleMuteVideo()}>
+                    <Option>
+                        <Tooltip title="Switch on video">
+                            <FontAwesomeIcon icon={faVideoSlash} />
+                            {/* <img src={VideoOff} alt='video_muted' /> */}
+                        </Tooltip>
+                    </Option>
+                </span>
+            } else {
+                videoControl = <span className="iconContainer" onClick={() => toggleMuteVideo()}>
+                    <Tooltip title="Switch off video">
+                        <Option>
+                            { / * <img src = {VideoOn} alt = 'video' /> * / }
+                            <FontAwesomeIcon icon={faVideo} />
+                        </Option>
+                    </Tooltip>
+                </span>
+            }
+        }
+    }
+    function removeDuplicates(array) {
+        return array.filter((a, b) => array.indexOf(a) === b)
+    };
+    function  audiomute ( )  {
+        if (stream) {
+            if (audioMuted) {
+                socketRef.current.emit('aud', { id: socketRef.current.id, aud: false });
+            }
+            else {
+                socketRef.current.emit('aud', { id: socketRef.current.id, aud: true })
+            }
+            setAudioMuted(!audioMuted);
+            stream.getAudioTracks()[0].enabled = audioMuted
+        }
+    }
+    let audioControl;
+    if (stream) {
+        if (!host) {
+            if (!muted) {
+                if (audioMuted) {
+                    audioControl = <span className="iconContainer"
+                        style={{ background: '#E62020 !important' }}
+                        onClick={() => audiomute()}>
+                        <Tooltip title="Unmute your audio">
+                            <Option>
+                                <FontAwesomeIcon icon={faMicrophoneSlash} />
+                                {/* <AudioMutedOutlined /> */}
+                            </Option>
+                        </Tooltip>
+                    </span>
+                } else {
+                    audioControl = <span className="iconContainer" onClick={() => audiomute()}>
+                        <Tooltip title="Mute your audio">
+                            <Option>
+                                {/* <AudioOutlined /> */}
+                                <FontAwesomeIcon icon={faMicrophone} />
+                            </Option>
+                        </Tooltip>
+                    </span>
+                }
+            }
+            else if (muted) {
+                if (!host) {
+                    audioControl = <span disabled className="iconContainer" style={{ background: '#E62020 !important' }} onClick={() => alert('All Are Muted')}>
+                        <Tooltip title="Unmute your audio">
+                            <Option><AudioMutedOutlined /></Option>
+                        </Tooltip>
+                    </span>
+                }
+            }
+        }
+        else if (host) {
+            if (audioMuted) {
+                audioControl = <span className="iconContainer" style={{ background: '#E62020' }} onClick={() => audiomute()}>
+                    <Tooltip title="Unmute your audio">
+                        <Option>
+                            {/* <AudioMutedOutlined /> */}
+                            <FontAwesomeIcon icon={faMicrophoneSlash} />
+                        </Option>
+                    </Tooltip>
+                </span>
+            } else {
+                audioControl = <span className="iconContainer" onClick={() => audiomute()}>
+                    <Tooltip title="Mute your audio">
+                        <Option>
+                            {/* <AudioOutlined /> */}
+                            <FontAwesomeIcon icon={faMicrophone} />
+                        </Option>
+                    </Tooltip>
+                </span>
+            }
+        }
+    }
+    let screencontrol;
+    let  hangup ;
+    if (stream) {
+        function  startRec ( )  {
+            const dispoptions = {
+                video: {
+                    cursor: true,
+                },
+                audio: true,
+            }
+            navigator.mediaDevices.getDisplayMedia(dispoptions).then(screen => {
+                var options = { mimeType: 'video/webm;codecs=vp9' };
+                mediaRecorder.current = new MediaRecorder(screen, options);
+                isRecording(true);
+                mediaRecorder.current.start();
+                console.log(mediaRecorder.current.state)
+                mediaRecorder.current.ondataavailable = function (event) {
+                    recordedChunks.push(event.data);
+                }
+                screen.getTracks()[0].onended = () => {
+                    mediaRecorder.current.stop();
+                    isRecording ( false ) ;
+                }
+                mediaRecorder.current.onstop = function (event) {
+                    console.log("Video Stopped");
+                    var  blob  =  new  Blob ( recordedChunks ,  {
+                        type: 'video/webm;codecs=vp9'
+                    });
+                    recordedChunks = [];
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    document.body.appendChild(a);
+                    a.style = 'display: none';
+                    a.href = url;
+                    a.download = 'test.webm';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    console.log(url);
+                }
+            })
+        }
+        if (!recording) {
+            recordControl =
+                <span className="iconContainer" onClick={() => startRec()}>
+                    <Option >
+                        <Tooltip title="Record meeting">
+                            {/* <img src={recordVideo} alt='recordVideo' /> */}
+                            <FontAwesomeIcon icon={faRecordVinyl} />
+                        </Tooltip>
+                    </Option>
+                </span>
+        }
+        else {
+            recordControl = <></>
+        }
+        hangup =
+            <Button ref={hangref} className="iconContainer" onClick={() => sethangupscr(true)}
+                style={{ background: '#E62020', }}
+            >
+                <Option>
+                    <Tooltip title="End meeting">
+                        {/* <img src={hangUp} alt='hangUp' /> */}
+                        <FontAwesomeIcon icon={faPhone} style={{ transform: 'rotate(225deg)', marginTop: '6px', }} />
+                    </Tooltip>
+                </Option>
+            </Button>
+    }
+    function hanguped() {
+        if (host) {
+            const roomref = db().ref('all-rooms/' + roomID);
+            roomref.update({
+                status: 'PEND'
+            })
+            socketRef.current.emit('host-leaved', roomID);
+        }
+        
+        
+        stream.getVideoTracks()[0].stop();
+        stream.getAudioTracks()[0].stop();
+        var ttoday = new Date();
+        var ttoday_hours = ttoday.getHours();
+        var ttoday_mins = ttoday.getMinutes();
+        var ttoday_secs = ttoday.getSeconds();
+        if (ttoday_hours < 10) ttoday_hours = '0' + ttoday_hours;
+        if (ttoday_mins < 10) ttoday_mins = '0' + ttoday_mins;
+        if (ttoday_secs < 10) ttoday_secs = '0' + ttoday_secs;
+        var elapsed_hours = ttoday_hours - today_hours;
+        var elapsed_mins = ttoday_mins - today_mins;
+        var elapsed_secs = ttoday_secs - today_secs;
+        socketRef.current.emit('user leave', { uname: name });
+        var elapsed_time = elapsed_hours + ':' + elapsed_mins + ':' + elapsed_secs;
+        history.push({
+            pathname: '/CallEnded',
+            state: {
+                title: meetname,
+                duration: elapsed_time,
+                hostended: hostended,
+                host: host,
+                hdiscon: hostdisconn,
+                roomid: roomID,
+            }
+        })
+    
+    }
+    const handleKeyPress = (event) => {
+        const fuser = auth().currentUser.displayName;
+        if (event.key == 'Enter') {
+            if (msg !== "") {
+                socketRef.current.emit('message', { message: msg, from: fuser });
+                console.log('press enter here!');
+                console.log(msg);
+                setmsg("");
+            }
+            else if (msg == "") {
+                alert("Please");
+            }
+        }
+    }
+    function handleFileChange(event) {
+        setFile(event.target.files[0]);
+    }
+    function handleInputChange(event) {
+        setmsg(event.target.value);
+    }
+    function sendFile() {
+        setUploading(true)
+        const storef = storage().ref('room/' + roomID + '/' + file.name).put(file);
+        storef.on('state_changed', (snapshot) => {
+            const perc = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            setperc(perc);
+        }, (err) => {
+            console.log(err);
+        }, () => {
+            setFile(null);
+            setperc();
+            storage().ref('room/' + roomID + '/' + file.name).getDownloadURL().then(url => {
+                console.log(url);
+                socketRef.current.emit('message', { message: url, from: name });
+            });
+            setUploading(false);
+        })
+    }
+    function toggleWhiteboard() {
+        setWB(!wb);
+        setuserListVisible(false);
+        setMessageBox(false);
+    }
+    function toggleMessageBox() {
+        setuserListVisible(false);
+        setMessageBox(true);
+        setWB(false);
+        setCollapsed(!collapsed);
+    }
+    function toggleUsersList() {
+        setMessageBox(false);
+        setuserListVisible(true);
+        setWB(false);
+        setCollapsed(!collapsed);
+    }
+    const closeSidebar = () => {
+        setCollapsed(false);
+        setPosition({ x: 0, y: 0 })
+    }
+    const handleDrag = (e, data) => {
+        setPosition({ x: data.x, y: data.y })
+    };
+    const menu = (
+        <Menu className='menu-div'>
+            <Menu.Item key="0">
+                <MenuDetail onClick={() => shareScreen()}>Share screen</MenuDetail>
+            </Menu.Item>
+            <Menu.Item key="1">
+                <MenuDetail onClick={() => toggleMessageBox()}>Chat</MenuDetail>
+            </Menu.Item>
+            <Menu.Item key="2">
+                <MenuDetail onClick={() => toggleWhiteboard()}>WhiteBoard</MenuDetail>
+            </Menu.Item>
+            <Menu.Item key="3">
+                <MenuDetail onClick={() => setmodalVisiblity(true)}>Meeting details</MenuDetail>
+            </Menu.Item>
+        </Menu>
+    );
+    return (
+        <Container>
+            <Content style={{ position: 'relative', }}>
+                <Draggable position={position} onDrag={handleDrag}>
+                    <DraggableDiv>
+                        <StyledVideo muted ref={userVideo} autoPlay playsInline style={{ visibility: userVedioVisible ? 'visible' : 'hidden' }} />
+                        {
+                            userVedioVisible &&
+                            <>
+                                <UserName>{myName}</UserName>
+                                <FontAwesomeIcon icon={faTimes} className='fa-icon' onClick={() => setuserVedioVisible(false)} />
+                            </>
+                        }
+                        {
+                            !userVedioVisible &&
+                            <UserInitLogoDiv >
+                                <p onClick={() => setuserVedioVisible(true)}>{myName[0].charAt(0)}</p>
+                            </UserInitLogoDiv>
+                        }
+                    </DraggableDiv>
+                </Draggable>
+                <ScreenSection>
+                    <VedioContainer>
+                        {
+                            <>
+                                {peers && peers.map((peer) => {
+                                    return (
+                                        <AllUsersVideo style={{ flexBasis: `${peers.length < 5 ? 90 / peers.length : 24}%` }}>
+                                     
+                                          
+                                          <Video key={peer.peerID} name={peer.uname} vid={peer.vid} peer={peer.peer} style={{ width: '90%', borderRadius: '5px', }} /> 
+                                          
+                                           <UserName>{peer.uname}</UserName>
+                                        </AllUsersVideo>
+                                    );
+                                })
+                                }
+                            </>
+                        }
+                    </VedioContainer>
+                </ScreenSection>
+                <CallControlWrapper>
+                    < OptionContainer >
+                        {audioControl}
+                        {videoControl}
+                        {recordControl}
+                        {hangup}
+                        <Tooltip title="Participants list">
+                            <span className='iconContainer' onClick={() => toggleUsersList()}>
+                                <Option>
+                                    <FontAwesomeIcon icon={faUsers} />
+                                    {/* <img src={usersImg} alt='usersImg' /> */}
+                                </Option>
+                            </span>
+                        </Tooltip>
+                        <span className='iconContainer'>
+                            <Option>
+                                <Dropdown overlay={menu} trigger={['click']} className='menu-div'>
+                                    <FontAwesomeIcon icon={faEllipsisH} />
+                                </Dropdown>
+                            </Option>
+                        </span>
+                        {/* {screenShare}
+                        {screencontrol} */}
+                        {/* <Tooltip title="WhiteBoard">
+                            <span className='iconContainer' onClick={() => toggleWhiteboard()}>
+                                <Option >
+                                    <FontAwesomeIcon icon={faStopCircle} />
+                                </Option>
+                            </span>
+                        </Tooltip> */}
+                        {/* <Tooltip title="Send message">
+                            <span className='iconContainer' onClick={() => toggleMessageBox()}>
+                                <Option >
+                                    <FontAwesomeIcon icon={faCommentDots} />
+                                </Option>
+                            </span>
+                        </Tooltip> */}
+                    </OptionContainer >
+                </CallControlWrapper>
+            </Content>
+            <Sidebar trigger={null} collapsible collapsed={collapsed} style={{ display: collapsed ? 'block' : 'none' }}>
+                <div className='close-container'>
+                    <FontAwesomeIcon icon={faTimes} className='fa-icon' onClick={closeSidebar} />
+                </div>
+                {
+                    messageBox &&
+                    <>
+                        <MessageBox>
+                            <p className='title'>Chat here</p>
+                            <div class="chat_box">
+                                <div class="body">
+                                    {listmsg.length > 0 && listmsg.map((msg) =>
+                                        <>
+                                            {msg.user !== myName ?
+                                                <div class="incoming">
+                                                    <div class="text">
+                                                        <div className='profile-container'>
+                                                            <Avatar icon={<UserOutlined />} />
+                                                            <p className='profile-user-name'>{msg.user}</p>
+                                                        </div>
+                                                        <p className='msg'>{msg.message}</p>
+                                                    </div>
+                                                </div>
+                                                :
+                                                <div class="outgoing">
+                                                    <div class="text">
+                                                        <div className='profile-container'>
+                                                            <Avatar icon={<UserOutlined />} />
+                                                            <p className='profile-user-name'>You</p>
+                                                        </div>
+                                                        <p className='msg'>{msg.message}</p>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </MessageBox>
+                        <MessageButtonContainer>
+                            <div className='progress-div'>
+                                {
+                                    uploading &&
+                                    <div style={{ width: '95%' }}> <Progress
+                                        percent={perc}
+                                        // percent={25}
+                                        showInfo={false} /> </div>}
+                            </div>
+                            <div className='msg-input-contrl-div'>
+                                <div className='msg-container'>
+                                    <input type="text" value={msg} onChange={handleInputChange}
+                                        class="msg" placeholder="Type a message..."
+                                        id="msg" onKeyPress={handleKeyPress}
+                                    />
+                                    <FontAwesomeIcon icon={faPaperPlane} />
+                                </div>
+                                <div className='buttons-div'>
+                                    {
+                                        file === null &&
+                                        <label><FontAwesomeIcon icon={faPaperclip} />
+                                            <input type="file" size="60" id='file-input' onChange={handleFileChange} />
+                                        </label>
+                                    }
+                                    {
+                                        file !== null
+                                        && <div className='icons-div'>
+                                            <FontAwesomeIcon className='fa-icon' icon={faCloudUploadAlt} onClick={() => sendFile()} />
+                                            <FontAwesomeIcon className='fa-icon' icon={faTimes} onClick={() => setFile(null)} />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </MessageButtonContainer>
+                    </>
+                }
+                {userListVisible &&
+                    <div>
+                        <p className='title'>Participants</p>
+                        {peers && peers.map((peer) => {
+                            return (
+                                <div className='participant-list'>
+                                    <p>{peer.uname}</p>
+                                    <div>
+                                        <span>{peer.aud ?
+                                            <FontAwesomeIcon icon={faMicrophoneSlash} /> :
+                                            <FontAwesomeIcon icon={faMicrophone} />
+                                        }</span>
+                                        <span>{peer.vid ? <FontAwesomeIcon icon={faVideoSlash} /> :
+                                            <FontAwesomeIcon icon={faVideo} />}</span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                        }
+                    </div>
+                }
+            </Sidebar>
+            {host ? accscr && <ScreenAcc visible={accscr} onCancel={() => {if(listacc == null){
+            setaccscr(false);
+             } else{
+                 alert('Accept or Reject');
+             }}}>
+                {listacc && listacc.map((i) =>{
+                    return(
+                    <div key={i.id}>
+                       <text>{i.name} is Requesting ShareScreen</text>
+                       <Button onClick={() => acceptthereq(i.name, i.id)}>Accept</Button>
+                       <Button onClick={() => rejectthereq(i.name, i.id)}>Reject</Button>
+                       </div>
+                    )
+                })}
+            </ScreenAcc>  : 
+            reqscr && <ScreenReq visiblity={reqscr} onCancel={() => setscr(false)}>
+             {acceptedreq === 'PEND' ? <Button onClick={() => req()}>Request</Button> : 
+             acceptedreq === 'ACCEPTED' ? <Button onClick={() => shareScreenn()}>Host Accepted Share</Button> :
+             acceptedreq === 'REJECT' ? <text>Host is Rejected Your Request <Button onClick={() =>{setacceptedreq('PEND')}}>Re Request</Button></text> :
+             <Loader />
+
+             }
+            </ScreenReq> }
+            {hangupscr && <Modal footer={[
+                <Button key='Hangup' onClick={() => hanguped()}>HangUp</Button>,
+            {hangupscr && <Modal cancelButtonProps ={{ style: {display: 'none'} } } footer={[
+                <Button danger key='Hangup' onClick={() => hanguped()}>HangUp</Button>,
+                <Button key='Cancel' onClick={() => sethangupscr(false)}>Cancel</Button>
+            ] }   visible = { hangupscr } onCancel = { ( ) => sethangupscr ( false ) } >   
+            ]}  visible={hangupscr}>
+                <div>
+
+                  Are You Sure Want To Hangup The Meeting
+                </div>
+
+            </Modal>}
+        </Container>
+    );
+}
+export default Roomi;
+
+file5:
+import React, { useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
+import Peer from "simple-peer";
+import Loader from "./Loader";
+import { ScreenAcc } from "./Modals/ScreenAcc";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+    faPaperclip, faPaperPlane,
+    faTimes ,  faCloudUploadAlt ,  faMicrophone ,
+    faMicrophoneSlash,
+    faVideo, faVideoSlash,
+    faRecordVinyl, faPhone,
+    // faStopCircle, faCommentDots,
+    faUsers ,
+    faArrowUp, faEllipsisH, faInfo,
+} from '@fortawesome/free-solid-svg-icons'
+import Draggable from 'react-draggable';
+import styled from "styled-components";
+import { auth, db, storage } from "../config/fire";
+import { useHistory } from "react-router-dom";
+import { Tooltip, Progress, Avatar, message, Button, Layout, Menu, Dropdown, Modal } from 'antd';
+///////icons & images  ////////
+import {
+    Audio Muted Outlined ,
+    // AudioOutlined, 
+    UserOutlined
+} from '@ant-design/icons';
+import VideoOff from '../images/videoOff.svg';
+import { VedioContainer, CallControlWrapper, UserName, MessageBox, ScreenSection, MessageButtonContainer } from './styles';
+import { ScreenReq } from "./Modals/ScreenReq";
+import socket from "socket.io-client/lib/socket";
+const { Sider, Content } = Layout;
+export const Container = styled(Layout)`
+    height: 100vh;
+    width: 100%;
+    overflow:hidden;
+    background:#fff;
+    position:relative;
+  
+    @media only screen and (max-width: 728px) {
+        height:100%;
+    }
+    
+`;
+export const VideoControl = styled.div`
+    display: flex;
+    height: 100%;
+    width:80%;
+    overflow:hidden;
+    overflow-y:auto;
+    flex-direction:column;
+    align-items: center;
+    padding:20px;
+    .anticon svg {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+    }
+    img {
+        height: 30px;
+        width: 30px;
+    }
+    .activeUsers {
+        display: flex;
+        flex-direction:column;
+        height:30% !important;
+        .userName{
+            display: flex;
+            flex-direction:row;
+        }
+        .anticon svg {
+            border: 2px solid #000;
+            width: 35px;
+            border-radius: 25px;            
+            margin-right: 10px;
+            height: 35px;
+            padding: 6px;       
+        }
+        p{
+            text-transform:uppercase;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+    }
+`;
+export const OptionContainer = styled.div`
+    width:50%;
+    position:absolute;
+    bottom:25px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: rgb(50 50 105 / 15%) 0px 2px 5px 0px, rgb(0 0 0 / 5%) 0px 1px 1px 0px;
+    border-radius: 10px;
+    .anticon svg {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+    }
+    img {
+        height: 25px;
+        width: 25px;
+    }
+    .iconContainer{
+        background-image: linear-gradient(to right,#41d4b3,#067D68);
+        color: white;
+        border-radius: 50%;
+        padding: 5px;
+        font-size: 14px;
+        width: 32px; 
+        height:32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &:hover{
+        transform: translateY(-3px);
+        box-shadow: 0 4px 17px rgb(0 0 0 / 35%);
+        }
+}
+`;
+const StyledVideo = styled.video`
+    width:90%;
+    border-radius: 5px;
+`;
+const StyledImage = styled.img`
+width:90%;
+border-radius: 5px;
+`;
+const Option = styled.div`
+    cursor:pointer;
+`;
+const AllUsersVideo = styled.div`
+    position: relative;
+    padding-top: 20px;
+    // flex-basis: 23%;
+    margin: 5px;
+`;
+const  Sidebar  =  styled ( Pages ) `
+max-width: 25% !important;
+min-width: 25% !important;
+width: 25% !important;
+box-shadow: rgb(50 50 105 / 15%) 0px 2px 5px 0px, rgb(0 0 0 / 5%) 0px 1px 1px 0px;
+background: #ffffff;
+padding:15px;
+.title{
+    font-size: 15px;
+    padding-top: 5px;
+    font-weight: 500;
+    font-family: 'Roboto', sans-serif;
+    }
+    .close-container{
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    .fa-icon {
+        color: #505050ad;
+        font-size: 15px;
+        cursor:pointer;
+    }
+    }
+    .participant-list{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        padding:5px 0px;
+        p{
+            margin:0 !important;
+            font-family: Roboto;
+            font-size: 15px;
+            font-weight: 500;
+            color: rgba(35,35,35,0.78);
+        }
+        span{
+            padding-left:25px;
+            color: rgb(10 131 109);
+        }
+    }
+`;
+const MenuDetail = styled.p`
+    font-family: Roboto;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgb(35 35 35 / 93%);
+    margin: 0 !important;
+    cursor: pointer; 
+ `;
+const ModalContainer = styled.div`
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ flex-direction: column;
+ width: 100%;
+ padding: 1rem;
+ p{
+    font-family: Roboto;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgb(35 35 35 / 93%);
+    // margin: 0 !important; 
+ }
+ .modal-icon-div{
+    background-image: linear-gradient(to right,#41d4b3,#067D68);
+    color: white;
+    border-radius: 50%;
+    padding: 5px;
+    font-size: 16px;
+    width: 40px; 
+    height:40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+ }
+ `;
+const UserInitLogoDiv = styled.div`
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    p{
+    color: white;
+    margin:0 !important;
+    font-size: 40px;
+    font-weight: 500;
+    cursor:pointer;
+    }
+    `;
+const DraggableDiv = styled.div`
+    right: 10px;
+    bottom: 15%;
+    z-index: 4;
+    position: absolute;
+    width: 25%;
+    .fa-icon {
+    position: absolute;
+    color: #ffffff66;
+    right: 37px;
+    top: 10px;
+    font-size: 15px;
+    }
+    `;
+const Video = (props) => {
+    const UserInitLogoDiv = styled.div`
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    p{
+    color: white;
+    margin:0 !important;
+    font-size: 40px;
+    font-weight: 500;
+    cursor:pointer;
+    }
+    `;
+    const ref = useRef();
+    const [muted, setmuted] = useState(props.vid);
+    let stream;
+    let screen;
+    let  avatarapi  =  'https://eu.ui-avatars.com/api/?'
+   
+    useEffect(() =>{
+        props.peer.on('stream', stream => { 
+            ref.current.srcObject  = stream
+            
+        
+       });
+       
+    }, []);
+    // useEffect(() => {
+    //     if(props.vid == true){
+    //         setmuted(true)
+    //     }
+    //     else if(props.vid == false){
+    //         setmuted(false);
+    //     }
+        
+    //}, [props.vid])
+     
+    return (
+        
+        <StyledVideo style playsInline autoPlay ref={ref} />
+       
+     
+          );
+}
+const videoConstraints = {
+    height: window.innerHeight / 2,
+    width: window.innerWidth / 2
+};
+const Roomi = (props) => {
+    const [peers, setPeers] = useState([]);
+    const [collapsed, setCollapsed] = useState(false);
+    const socketRef = useRef();
+    const hangref = useRef(null);
+    const [hangupscr, sethangupscr] = useState(false);
+    const [reqscr, setscr] = useState(false); //Req Modal For Screen Share
+    const [accscr, setaccscr] = useState(false); //Accepting Screen For Screen Share(Host)
+    const [listacc, setlistacc] = useState([]);
+    
+    const [acceptedreq, setacceptedreq] = useState('PEND'); // For reqscr Status
+    const [hostdisconn, sethostdisconn] = useState(false); //Whether host is disconnected Accidentally
+    const history = useHistory();
+    const [hpeers, setHPeers] = useState([]);
+    var recordedChunks = [];
+    const [recording, isRecording] = useState(false);
+    const mediaRecorder = useRef();
+    const [myName, setMyname] = useState(['You']);
+    const userVideo = useRef();
+    const peersRef = useRef([]);
+    const mypeer = useRef();
+    const host = props.host;
+    const [muted, setMuted] = useState(false);
+    const meetname = props.title;
+    const [hostended, setHostEnded] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const  [ minutes ,  setperc ]  =  useState ( ) ;
+    const [stream, setStream] = useState();
+    const [audioMuted, setAudioMuted] = useState(true);
+    const [videoMuted, setVideoMuted] = useState(true);
+    const roomID = props.roomid;
+    const [msg, setmsg] = useState("");
+    const [file, setFile] = useState(null);
+    const [listmsg, setlistmsg] = useState([]);
+    const [messageBox, setMessageBox] = useState(false);
+    let  avatarapi  =  'https://eu.ui-avatars.com/api/?' ;
+    where  hid ;
+    const [wb, setWB] = useState(false);
+    const [userListVisible, setuserListVisible] = useState(false);
+    const  [ modalVisiblity ,  setmodalVisiblity ]  =  useState ( false ) ;
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const  [ userVedioVisible ,  setuserVedioVisible ]  =  useState ( false ) ;
+    var  today  =  new  Date ( ) ;
+    const name = auth().currentUser.displayName;
+    var today_hours = today.getHours();
+    var today_mins = today.getMinutes();
+    var  today_secs  = today.getSeconds();
+    if (today_hours < 10) today_hours = '0' + today_hours;
+    if (today_mins < 10) today_mins = '0' + today_mins;
+    if (today_secs < 10) today_secs = '0' + today_secs;
+    var today_time = today_hours + ':' + today_mins;
+    useEffect(() => {
+        console.log(host);
+        console.log(roomID);
+        document.title = "Loading...";
+        var  murl  = "https://project-5backend.herokuapp.com/"
+        where  lurl  = "http://192.168.43.166:8000/"
+        socketRef.current = io.connect(murl);
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+            setStream(stream);
+            stream.getVideoTracks()[0].enabled = false;
+            stream.getAudioTracks()[0].enabled = false;
+            userVideo.current.srcObject = stream;
+            document.title = meetname;
+            socketRef.current.emit("join room", { roomID: roomID, aud: audioMuted, vid: videoMuted, uname: name });
+            socketRef.current.emit('add user', name);
+            console.log('My ID is' + socketRef.current.id);
+            if (host) {
+                socketRef.current.emit('host', socketRef.current.id);
+            }
+            const  peers  =  [ ] ;
+            const  hpeer  =  [ ] ;
+            socketRef.current.on('user list', names => {
+                names = names.filter(id => id !== names[0]);
+                setMyname(name);
+            })
+            socketRef.current.on('mutedall', payload => {
+                if (!host) {
+                    alert('Host(' + payload.muter + ') All');
+                    if (stream) {
+                        setMuted(true);
+                        setVideoMuted(true);
+                        stream.getVideoTracks()[0].enabled = false;
+                        setAudioMuted(true);
+                        stream.getAudioTracks()[0].enabled = false;
+                    }
+                }
+                for (var i = 0; i < peersRef.current.length; i++) {
+                    if (peersRef.current[i].peerID !== payload.id) {
+                        peersRef.current[i].aud = true;
+                        peersRef.current[i].vid = true;
+                    }
+                }
+                setPeers([...peersRef.current]);
+            });
+            socketRef.current.on('unmutedall', ({ muter }) => {
+                if (!host) {
+                    alert('Host(' + muter + ') Unmuted All');
+                    setMuted(false);
+                }
+            })
+            socketRef.current.on('host-id', id => {
+                console.log(id);
+                hid = id;
+                console.log('The Host is ' + id);
+                console.log(hid);
+            });
+            socketRef.current.on("all users", async users => {
+                users.forEach(userID => {
+                    const peer = createPeer(userID.id, socketRef.current.id, stream);
+                    peersRef.current.push({
+                        peerID : userID . id ,
+                        aud: userID.aud,
+                        vid : userID . vid ,
+                        uname: userID.uname,
+                        peer,
+                    });
+                    peers.push({
+                        peerID : userID . id ,
+                        aud: userID.aud,
+                        vid : userID . vid ,
+                        uname: userID.uname,
+                        peer,
+                    });
+                });
+                //    if(host){
+                //     setPeers(peers);
+                //    }
+                //     if(!host){
+                // var hindex = null;
+                //     for (var i = 0;  i < peers.length; i++){
+                //      const peer = peers[i];
+                //     if(peer.peerID === hid){
+                //         hindex = i;
+                //     }
+                //     }
+                //     if(hindex !== null){
+                //         console.log(peers[hindex]);
+                //         setPeers([peers[hindex]]);
+                //     }
+                
+                //  }
+                setPeers(peers);
+                
+            });
+            socketRef.current.on('audc', payload => {
+                if (socketRef.current.id !== payload.id) {
+                    const pe = peersRef.current.findIndex(i => i.peerID === payload.id);
+                    peersRef . current [ pe ] . aud  =  payload . aud ;
+                    setPeers([...peersRef.current]);
+                }
+            });
+            socketRef.current.on('vidc', payload => {
+                if (socketRef.current.id !== payload.id) {
+                    const pe = peersRef.current.findIndex(i => i.peerID === payload.id);
+                    peersRef . current [ pe ] . vid  =  payload . vid ;
+                    setPeers([...peersRef.current]);
+                }
+            });
+            socketRef.current.on("user joined", payload => {
+                console.log(peers.find(p => p.peerID == socketRef.current.id));
+                const peer = addPeer(payload.signal, payload.callerID, stream);
+                peersRef.current.push({
+                    peerID: payload.callerID,
+                    aud: payload.aud,
+                    vid : payload . at ,
+                    uname: payload.uname,
+                    peer,
+                });
+                const  peerObj  =  {
+                    peerID: payload.callerID,
+                    peer,
+                }
+                console.log(peerObj.peerID);
+                //   if(host){
+                //     setPeers([...peersRef.current]);
+                //   }
+                  
+                setPeers([...peersRef.current]);
+                console.log(peers);
+            });
+            socketRef.current.on("receiving returned signal", payload => {
+                const item = peersRef.current.find(p => p.peerID === payload.id);
+                item.peer.signal(payload.signal);
+            });
+            socketRef.current.on('createMessage', ({ frmsg, userfrm }) => {
+                console.log(frmsg + 'from' + userfrm, 'test');
+                setlistmsg(prevstate => [...prevstate, { message: frmsg, user: userfrm }]);
+            });
+            console.log(peers);
+        });
+        socketRef.current.on('user-left', id => {
+            const peerObj = peersRef.current.find(p => p.peerID === id);
+            if (peerObj) {
+                peerObj.peer.destroy();
+            }
+            const peerss = peersRef.current.filter(p => p.peerID !== id);
+            peersRef.current = peerss;
+            
+            // if(host){
+            // setPeers(peerss);
+            // }
+            setPeers(peers);
+           
+            console.log(peers);
+        })
+        socketRef.current.on('user leaved', ({ leaved }) => {
+            console.log(leaved + " User Disconnected");
+        });
+
+        socketRef.current.on('host-closed', (payload) => {
+
+            sethostdisconn(payload.disconn);
+
+            setHostEnded(true);
+
+            if(hangref.current){
+           hangref.current.click();
+            }
+        });
+         socketRef.current.on('requesting-host', payload =>{
+            const list ={
+                name: payload.name,
+                id: payload.id,
+            }
+            
+            setlistacc(i => [...i,list]);
+            setaccscr(true);
+        });
+        socketRef.current.on('host-accepted', payload =>{
+            setscr(true);
+            setacceptedreq('ACCEPTED');
+            
+        });
+        socketRef.current.on('host-rejected', payload =>{
+            setscr(true);
+            setacceptedreq('REJECT');
+            
+        });
+    }, []);
+    function createPeer(userToSignal, callerID, stream) {
+        const peer = new Peer({
+            initiator: true,
+            trickle: false,
+            stream,
+        });
+        const aud = audioMuted;
+        const vid = videoMuted;
+        let uname = name;
+        peer.on("signal", signal => {
+            socketRef.current.emit("sending signal", { userToSignal, aud, vid, callerID, signal, uname })
+        });
+        mypeer.current = peer;
+        return peer;
+    }
+    function addPeer(incomingSignal, callerID, stream) {
+        const peer = new Peer({
+            initiator: false,
+            trickle: false,
+            stream,
+        })
+        mypeer.current = peer;
+        peer.on("signal", signal => {
+            socketRef.current.emit("returning signal", { signal, callerID })
+        })
+        peer.signal(incomingSignal);
+        return peer;
+    }
+    function  req ( ) {
+        setacceptedreq('LOAD');
+        socketRef.current.emit('request-host', {id: socketRef.current.id, host: hid, name: name})
+    }
+    function muteall() {
+        if (host) {
+            socketRef.current.emit('isMutedAll', { from: auth().currentUser.displayName, id: socketRef.current.id });
+            setMuted(true);
+        }
+    }
+    function  unmuteall ( )  {
+        if (host) {
+            socketRef.current.emit('isUnMutedAll', { from: auth().currentUser.displayName });
+            setMuted(false);
+        }
+    }
+   function  shareScreen ( ) {
+       if(host){
+           shareScreenn();
+       }
+       else{
+           setscr(true);
+       }
+   }
+   function  acceptthereq (name, id){
+       
+       socketRef.current.emit('host-accepting', {id, name});
+       const acc = listacc.filter(i => i.id !== id);
+       if(acc.length == 0){
+           setaccscr(false);
+       }
+       setlistacc(acc);
+       console.log(acc);
+}
+   function  rejectthereq(name, id){
+    socketRef.current.emit('host-rejecting', {id, name});
+    const acc = listacc.filter(i => i.id !== id);
+    if(acc.length == 0){
+           setaccscr(false);
+       }
+    setlistacc(acc);
+   }
+    function  shareScreenn ( )  {
+        
+        navigator.mediaDevices.getDisplayMedia({ cursor: true })
+            .then(screenStream => {
+                mypeer.current.replaceTrack(stream.getVideoTracks()[0], screenStream.getVideoTracks()[0], stream)
+                userVideo.current.srcObject = screenStream
+                screenStream.getTracks()[0].onended = () => {
+                    if(!host){
+                        setacceptedreq ( 'PEND' ) ;
+                    }
+                    mypeer.current.replaceTrack(screenStream.getVideoTracks()[0], stream.getVideoTracks()[0], stream)
+                    userVideo.current.srcObject = stream
+                }
+            })
+        
+    }
+    let screenShare;
+    
+    if(mypeer.current){
+        
+         screenShare =  <span className="iconContainer" onClick={() => shareScreen()}>
+        <Tooltip title="Share your screen">
+            <Option>
+                <span style={{ background: 'white', borderRadius: '5px', padding: '0px 4px' }}>
+                    <FontAwesomeIcon icon={faArrowUp} style={{
+                        color: '#108d75',
+                        fontSize: '11px',
+                    }} />
+                </span>
+                {/* <img src={shareMyScreen} alt='shareMyScreen' /> */}
+            </Option>
+        </Tooltip>
+    </span>
+        
+    }
+    function isMobileDevice() {
+        let check = false;
+        (function (a) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda| xiino /i . test ( a )  ||  / 1207 | 6310 | 6590 | 3gso | 4thp | 50 [ 1-6 ] i | 770s | 802s | a wa | abac | ac\- ) | ai ( ko | rn ) | al ( av | ca | co ) | amoi | an ((er|oo|s ex | ny |yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
+        return check;
+    };
+    let recordControl;
+    if (isMobileDevice()) {
+        // screenShare = <></>
+        recordControl = <></>
+    }
+    function  toggleMuteVideo ( )  {
+        if (stream) {
+            if (videoMuted) {
+                socketRef.current.emit('vid', { id: socketRef.current.id, vid: false });
+            }
+            else {
+                socketRef.current.emit('vid', { id: socketRef.current.id, vid: true });
+            }
+            setVideoMuted(!videoMuted);
+            stream.getVideoTracks()[0].enabled = videoMuted;
+        }
+    }
+    let videoControl;
+    if (stream) {
+        if (!host) {
+            if (!muted) {
+                if (videoMuted) {
+                    videoControl = <span className="iconContainer" style={{ background: '#E62020' }} onClick={() => toggleMuteVideo()}>
+                        <Tooltip title="Switch on video">
+                            <Option>
+                                {/* <img src={VideoOff} alt='video_muted' /> */}
+                                <FontAwesomeIcon icon={faVideoSlash} />
+                            </Option>
+                        </Tooltip>
+                    </span>
+                } else {
+                    videoControl = <span className="iconContainer" onClick={() => toggleMuteVideo()}>
+                        <Tooltip title="Switch off video">
+                            <Option>
+                                { / * <img src = {VideoOn} alt = 'video' /> * / }
+                                <FontAwesomeIcon icon={faVideo} />
+                            </Option>
+                        </Tooltip>
+                    </span>
+                }
+            }
+            else if (muted) {
+                if (!host) {
+                    videoControl = <span disabled className="iconContainer" onClick={() => alert('All Are Muted')}>
+                        <Option>
+                            <Tooltip title="Switch on video">
+                                <img src={VideoOff} alt='video_muted' />
+                            </Tooltip>
+                        </Option>
+                    </span>
+                } else if (host) {
+                }
+            }
+            if (videoMuted) {
+                videoControl = <span className="iconContainer" style={{ background: '#E62020' }} onClick={() => toggleMuteVideo()}>
+                    <Option>
+                        <Tooltip title="Switch on video">
+                            <FontAwesomeIcon icon={faVideoSlash} />
+                            {/* <img src={VideoOff} alt='video_muted' /> */}
+                        </Tooltip>
+                    </Option>
+                </span>
+            } else {
+                videoControl = <span className="iconContainer" onClick={() => toggleMuteVideo()}>
+                    <Tooltip title="Switch off video">
+                        <Option>
+                            <FontAwesomeIcon icon={faVideo} />
+                            { / * <img src = {VideoOn} alt = 'video' /> * / }
+                        </Option>
+                    </Tooltip>
+                </span>
+            }
+        }
+        else if (host) {
+            if (videoMuted) {
+                videoControl = <span className="iconContainer" style={{ background: '#E62020' }} onClick={() => toggleMuteVideo()}>
+                    <Option>
+                        <Tooltip title="Switch on video">
+                            <FontAwesomeIcon icon={faVideoSlash} />
+                            {/* <img src={VideoOff} alt='video_muted' /> */}
+                        </Tooltip>
+                    </Option>
+                </span>
+            } else {
+                videoControl = <span className="iconContainer" onClick={() => toggleMuteVideo()}>
+                    <Tooltip title="Switch off video">
+                        <Option>
+                            { / * <img src = {VideoOn} alt = 'video' /> * / }
+                            <FontAwesomeIcon icon={faVideo} />
+                        </Option>
+                    </Tooltip>
+                </span>
+            }
+        }
+    }
+    function removeDuplicates(array) {
+        return array.filter((a, b) => array.indexOf(a) === b)
+    };
+    function  audiomute ( )  {
+        if (stream) {
+            if (audioMuted) {
+                socketRef.current.emit('aud', { id: socketRef.current.id, aud: false });
+            }
+            else {
+                socketRef.current.emit('aud', { id: socketRef.current.id, aud: true })
+            }
+            setAudioMuted(!audioMuted);
+            stream.getAudioTracks()[0].enabled = audioMuted
+        }
+    }
+    let audioControl;
+    if (stream) {
+        if (!host) {
+            if (!muted) {
+                if (audioMuted) {
+                    audioControl = <span className="iconContainer"
+                        style={{ background: '#E62020 !important' }}
+                        onClick={() => audiomute()}>
+                        <Tooltip title="Unmute your audio">
+                            <Option>
+                                <FontAwesomeIcon icon={faMicrophoneSlash} />
+                                {/* <AudioMutedOutlined /> */}
+                            </Option>
+                        </Tooltip>
+                    </span>
+                } else {
+                    audioControl = <span className="iconContainer" onClick={() => audiomute()}>
+                        <Tooltip title="Mute your audio">
+                            <Option>
+                                {/* <AudioOutlined /> */}
+                                <FontAwesomeIcon icon={faMicrophone} />
+                            </Option>
+                        </Tooltip>
+                    </span>
+                }
+            }
+            else if (muted) {
+                if (!host) {
+                    audioControl = <span disabled className="iconContainer" style={{ background: '#E62020 !important' }} onClick={() => alert('All Are Muted')}>
+                        <Tooltip title="Unmute your audio">
+                            <Option><AudioMutedOutlined /></Option>
+                        </Tooltip>
+                    </span>
+                }
+            }
+        }
+        else if (host) {
+            if (audioMuted) {
+                audioControl = <span className="iconContainer" style={{ background: '#E62020' }} onClick={() => audiomute()}>
+                    <Tooltip title="Unmute your audio">
+                        <Option>
+                            {/* <AudioMutedOutlined /> */}
+                            <FontAwesomeIcon icon={faMicrophoneSlash} />
+                        </Option>
+                    </Tooltip>
+                </span>
+            } else {
+                audioControl = <span className="iconContainer" onClick={() => audiomute()}>
+                    <Tooltip title="Mute your audio">
+                        <Option>
+                            {/* <AudioOutlined /> */}
+                            <FontAwesomeIcon icon={faMicrophone} />
+                        </Option>
+                    </Tooltip>
+                </span>
+            }
+        }
+    }
+    let screencontrol;
+    let  hangup ;
+    if (stream) {
+        function  startRec ( )  {
+            const dispoptions = {
+                video: {
+                    cursor: true,
+                },
+                audio: true,
+            }
+            navigator.mediaDevices.getDisplayMedia(dispoptions).then(screen => {
+                var options = { mimeType: 'video/webm;codecs=vp9' };
+                mediaRecorder.current = new MediaRecorder(screen, options);
+                isRecording(true);
+                mediaRecorder.current.start();
+                console.log(mediaRecorder.current.state)
+                mediaRecorder.current.ondataavailable = function (event) {
+                    recordedChunks.push(event.data);
+                }
+                screen.getTracks()[0].onended = () => {
+                    mediaRecorder.current.stop();
+                    isRecording ( false ) ;
+                }
+                mediaRecorder.current.onstop = function (event) {
+                    console.log("Video Stopped");
+                    var  blob  =  new  Blob ( recordedChunks ,  {
+                        type: 'video/webm;codecs=vp9'
+                    });
+                    recordedChunks = [];
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    document.body.appendChild(a);
+                    a.style = 'display: none';
+                    a.href = url;
+                    a.download = 'test.webm';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    console.log(url);
+                }
+            })
+        }
+        if (!recording) {
+            recordControl =
+                <span className="iconContainer" onClick={() => startRec()}>
+                    <Option >
+                        <Tooltip title="Record meeting">
+                            {/* <img src={recordVideo} alt='recordVideo' /> */}
+                            <FontAwesomeIcon icon={faRecordVinyl} />
+                        </Tooltip>
+                    </Option>
+                </span>
+        }
+        else {
+            recordControl = <></>
+        }
+        hangup =
+            <Button ref={hangref} className="iconContainer" onClick={() => sethangupscr(true)}
+                style={{ background: '#E62020', }}
+            >
+                <Option>
+                    <Tooltip title="End meeting">
+                        {/* <img src={hangUp} alt='hangUp' /> */}
+                        <FontAwesomeIcon icon={faPhone} style={{ transform: 'rotate(225deg)', marginTop: '6px', }} />
+                    </Tooltip>
+                </Option>
+            </Button>
+    }
+    function hanguped() {
+        if (host) {
+            const roomref = db().ref('all-rooms/' + roomID);
+            roomref.update({
+                status: 'PEND'
+            })
+            socketRef.current.emit('host-leaved', roomID);
+        }
+        
+        
+        stream.getVideoTracks()[0].stop();
+        stream.getAudioTracks()[0].stop();
+        var ttoday = new Date();
+        var ttoday_hours = ttoday.getHours();
+        var ttoday_mins = ttoday.getMinutes();
+        var ttoday_secs = ttoday.getSeconds();
+        if (ttoday_hours < 10) ttoday_hours = '0' + ttoday_hours;
+        if (ttoday_mins < 10) ttoday_mins = '0' + ttoday_mins;
+        if (ttoday_secs < 10) ttoday_secs = '0' + ttoday_secs;
+        var elapsed_hours = ttoday_hours - today_hours;
+        var elapsed_mins = ttoday_mins - today_mins;
+        var elapsed_secs = ttoday_secs - today_secs;
+        socketRef.current.emit('user leave', { uname: name });
+        var elapsed_time = elapsed_hours + ':' + elapsed_mins + ':' + elapsed_secs;
+        history.push({
+            pathname: '/CallEnded',
+            state: {
+                title: meetname,
+                duration: elapsed_time,
+                hostended: hostended,
+                host: host,
+                hdiscon: hostdisconn,
+                roomid: roomID,
+            }
+        })
+    
+    }
+    const handleKeyPress = (event) => {
+        const fuser = auth().currentUser.displayName;
+        if (event.key == 'Enter') {
+            if (msg !== "") {
+                socketRef.current.emit('message', { message: msg, from: fuser });
+                console.log('press enter here!');
+                console.log(msg);
+                setmsg("");
+            }
+            else if (msg == "") {
+                alert("Please");
+            }
+        }
+    }
+    function handleFileChange(event) {
+        setFile(event.target.files[0]);
+    }
+    function handleInputChange(event) {
+        setmsg(event.target.value);
+    }
+    function sendFile() {
+        setUploading(true)
+        const storef = storage().ref('room/' + roomID + '/' + file.name).put(file);
+        storef.on('state_changed', (snapshot) => {
+            const perc = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            setperc(perc);
+        }, (err) => {
+            console.log(err);
+        }, () => {
+            setFile(null);
+            setperc();
+            storage().ref('room/' + roomID + '/' + file.name).getDownloadURL().then(url => {
+                console.log(url);
+                socketRef.current.emit('message', { message: url, from: name });
+            });
+            setUploading(false);
+        })
+    }
+    function toggleWhiteboard() {
+        setWB(!wb);
+        setuserListVisible(false);
+        setMessageBox(false);
+    }
+    function toggleMessageBox() {
+        setuserListVisible(false);
+        setMessageBox(true);
+        setWB(false);
+        setCollapsed(!collapsed);
+    }
+    function toggleUsersList() {
+        setMessageBox(false);
+        setuserListVisible(true);
+        setWB(false);
+        setCollapsed(!collapsed);
+    }
+    const closeSidebar = () => {
+        setCollapsed(false);
+        setPosition({ x: 0, y: 0 })
+    }
+    const handleDrag = (e, data) => {
+        setPosition({ x: data.x, y: data.y })
+    };
+    const menu = (
+        <Menu className='menu-div'>
+            <Menu.Item key="0">
+                <MenuDetail onClick={() => shareScreen()}>Share screen</MenuDetail>
+            </Menu.Item>
+            <Menu.Item key="1">
+                <MenuDetail onClick={() => toggleMessageBox()}>Chat</MenuDetail>
+            </Menu.Item>
+            <Menu.Item key="2">
+                <MenuDetail onClick={() => toggleWhiteboard()}>WhiteBoard</MenuDetail>
+            </Menu.Item>
+            <Menu.Item key="3">
+                <MenuDetail onClick={() => setmodalVisiblity(true)}>Meeting details</MenuDetail>
+            </Menu.Item>
+        </Menu>
+    );
+    return (
+        <Container>
+            <Content style={{ position: 'relative', }}>
+                <Draggable position={position} onDrag={handleDrag}>
+                    <DraggableDiv>
+                        <StyledVideo muted ref={userVideo} autoPlay playsInline style={{ visibility: userVedioVisible ? 'visible' : 'hidden' }} />
+                        {
+                            userVedioVisible &&
+                            <>
+                                <UserName>{myName}</UserName>
+                                <FontAwesomeIcon icon={faTimes} className='fa-icon' onClick={() => setuserVedioVisible(false)} />
+                            </>
+                        }
+                        {
+                            !userVedioVisible &&
+                            <UserInitLogoDiv >
+                                <p onClick={() => setuserVedioVisible(true)}>{myName[0].charAt(0)}</p>
+                            </UserInitLogoDiv>
+                        }
+                    </DraggableDiv>
+                </Draggable>
+                <ScreenSection>
+                    <VedioContainer>
+                        {
+                            <>
+                                {peers && peers.map((peer) => {
+                                    return (
+                                        <AllUsersVideo style={{ flexBasis: `${peers.length < 5 ? 90 / peers.length : 24}%` }}>
+                                     
+                                          
+                                          <Video key={peer.peerID} name={peer.uname} vid={peer.vid} peer={peer.peer} style={{ width: '90%', borderRadius: '5px', }} /> 
+                                          
+                                           <UserName>{peer.uname}</UserName>
+                                        </AllUsersVideo>
+                                    );
+                                })
+                                }
+                            </>
+                        }
+                    </VedioContainer>
+                </ScreenSection>
+                <CallControlWrapper>
+                    < OptionContainer >
+                        {audioControl}
+                        {videoControl}
+                        {recordControl}
+                        {hangup}
+                        <Tooltip title="Participants list">
+                            <span className='iconContainer' onClick={() => toggleUsersList()}>
+                                <Option>
+                                    <FontAwesomeIcon icon={faUsers} />
+                                    {/* <img src={usersImg} alt='usersImg' /> */}
+                                </Option>
+                            </span>
+                        </Tooltip>
+                        <span className='iconContainer'>
+                            <Option>
+                                <Dropdown overlay={menu} trigger={['click']} className='menu-div'>
+                                    <FontAwesomeIcon icon={faEllipsisH} />
+                                </Dropdown>
+                            </Option>
+                        </span>
+                        {/* {screenShare}
+                        {screencontrol} */}
+                        {/* <Tooltip title="WhiteBoard">
+                            <span className='iconContainer' onClick={() => toggleWhiteboard()}>
+                                <Option >
+                                    <FontAwesomeIcon icon={faStopCircle} />
+                                </Option>
+                            </span>
+                        </Tooltip> */}
+                        {/* <Tooltip title="Send message">
+                            <span className='iconContainer' onClick={() => toggleMessageBox()}>
+                                <Option >
+                                    <FontAwesomeIcon icon={faCommentDots} />
+                                </Option>
+                            </span>
+                        </Tooltip> */}
+                    </OptionContainer >
+                </CallControlWrapper>
+            </Content>
+            <Sidebar trigger={null} collapsible collapsed={collapsed} style={{ display: collapsed ? 'block' : 'none' }}>
+                <div className='close-container'>
+                    <FontAwesomeIcon icon={faTimes} className='fa-icon' onClick={closeSidebar} />
+                </div>
+                {
+                    messageBox &&
+                    <>
+                        <MessageBox>
+                            <p className='title'>Chat here</p>
+                            <div class="chat_box">
+                                <div class="body">
+                                    {listmsg.length > 0 && listmsg.map((msg) =>
+                                        <>
+                                            {msg.user !== myName ?
+                                                <div class="incoming">
+                                                    <div class="text">
+                                                        <div className='profile-container'>
+                                                            <Avatar icon={<UserOutlined />} />
+                                                            <p className='profile-user-name'>{msg.user}</p>
+                                                        </div>
+                                                        <p className='msg'>{msg.message}</p>
+                                                    </div>
+                                                </div>
+                                                :
+                                                <div class="outgoing">
+                                                    <div class="text">
+                                                        <div className='profile-container'>
+                                                            <Avatar icon={<UserOutlined />} />
+                                                            <p className='profile-user-name'>You</p>
+                                                        </div>
+                                                        <p className='msg'>{msg.message}</p>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </MessageBox>
+                        <MessageButtonContainer>
+                            <div className='progress-div'>
+                                {
+                                    uploading &&
+                                    <div style={{ width: '95%' }}> <Progress
+                                        percent={perc}
+                                        // percent={25}
+                                        showInfo={false} /> </div>}
+                            </div>
+                            <div className='msg-input-contrl-div'>
+                                <div className='msg-container'>
+                                    <input type="text" value={msg} onChange={handleInputChange}
+                                        class="msg" placeholder="Type a message..."
+                                        id="msg" onKeyPress={handleKeyPress}
+                                    />
+                                    <FontAwesomeIcon icon={faPaperPlane} />
+                                </div>
+                                <div className='buttons-div'>
+                                    {
+                                        file === null &&
+                                        <label><FontAwesomeIcon icon={faPaperclip} />
+                                            <input type="file" size="60" id='file-input' onChange={handleFileChange} />
+                                        </label>
+                                    }
+                                    {
+                                        file !== null
+                                        && <div className='icons-div'>
+                                            <FontAwesomeIcon className='fa-icon' icon={faCloudUploadAlt} onClick={() => sendFile()} />
+                                            <FontAwesomeIcon className='fa-icon' icon={faTimes} onClick={() => setFile(null)} />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </MessageButtonContainer>
+                    </>
+                }
+                {userListVisible &&
+                    <div>
+                        <p className='title'>Participants</p>
+                        {peers && peers.map((peer) => {
+                            return (
+                                <div className='participant-list'>
+                                    <p>{peer.uname}</p>
+                                    <div>
+                                        <span>{peer.aud ?
+                                            <FontAwesomeIcon icon={faMicrophoneSlash} /> :
+                                            <FontAwesomeIcon icon={faMicrophone} />
+                                        }</span>
+                                        <span>{peer.vid ? <FontAwesomeIcon icon={faVideoSlash} /> :
+                                            <FontAwesomeIcon icon={faVideo} />}</span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                        }
+                    </div>
+                }
+            </Sidebar>
+            {host ? accscr && <ScreenAcc visible={accscr} onCancel={() => {if(listacc == null){
+            setaccscr(false);
+             } else{
+                 alert('Accept or Reject');
+             }}}>
+                {listacc && listacc.map((i) =>{
+                    return(
+                    <div key={i.id}>
+                       <text>{i.name} is Requesting ShareScreen</text>
+                       <Button onClick={() => acceptthereq(i.name, i.id)}>Accept</Button>
+                       <Button onClick={() => rejectthereq(i.name, i.id)}>Reject</Button>
+                       </div>
+                    )
+                })}
+            </ScreenAcc>  : 
+            reqscr && <ScreenReq visiblity={reqscr} onCancel={() => setscr(false)}>
+             {acceptedreq === 'PEND' ? <Button onClick={() => req()}>Request</Button> : 
+             acceptedreq === 'ACCEPTED' ? <Button onClick={() => shareScreenn()}>Host Accepted Share</Button> :
+             acceptedreq === 'REJECT' ? <text>Host is Rejected Your Request <Button onClick={() =>{setacceptedreq('PEND')}}>Re Request</Button></text> :
+             <Loader />
+
+             }
+            </ScreenReq> }
+            {hangupscr && <Modal footer={[
+                <Button key='Hangup' onClick={() => hanguped()}>HangUp</Button>,
+            {hangupscr && <Modal cancelButtonProps ={{ style: {display: 'none'} } } footer={[
+                <Button danger key='Hangup' onClick={() => hanguped()}>HangUp</Button>,
+                <Button key='Cancel' onClick={() => sethangupscr(false)}>Cancel</Button>
+            ] }   visible = { hangupscr } onCancel = { ( ) => sethangupscr ( false ) } >   
+            ]}  visible={hangupscr}>
+                <div>
+
+                  Are You Sure Want To Hangup The Meeting
+                </div>
+
+            </Modal>}
+        </Container>
+    );
+}
+export default Roomi;
+
+file5:
+ src/helpers/auth.js
+ import { auth } from "../config/fire";
+export function signup(remail, rpwd) {
+  return auth().createUserWithEmailAndPassword(remail, rpwd);
+}
+
+export function signout(){
+  return auth().signOut();
+
+}
+
+export function signin(lemail, lpwd) {
+  return auth().signInWithEmailAndPassword(lemail, lpwd);
+}
+export function signInWithGoogle() {
+  const provider = new auth.GoogleAuthProvider();
+  return auth().signInWithPopup(provider);
+}
+
+export function updateprof(uname){
+  var user = auth().currentUser;
+  user.updateProfile({
+  return user.updateProfile({
+    displayName: uname,
+  })
+}
+export function updatephoto(upic){
+  var user = auth().currentUser;
+  user.updateProfile({
+    photURL: upic,
+  })
+}
+
+file 6:
+src/pages/Home.jsx
+
+import React, { Component } from 'react';
+import { Form, Button } from "react-bootstrap";
+import { Divider, Tooltip } from 'antd';
+import { Divider, Tooltip, message } from 'antd';
+import { Link } from "react-router-dom";
+import Head from '../components/Head';
+import { auth } from "../config/fire";
+import {
+    signup, signin,
+    // signInWithGoogle
+} from '../helpers/auth';
+import CreateMeetModal from '../components/Modals/createMeetModal';
+import JoinMeetingModal from '../components/Modals/joinMeetingModal';
+import {
+    Container, HomeRowContainer, HomeConnectButton, HomeSignContainer, LogSuggestion,HomeImageContainer,
+    //  UserDetailsCard,
+    EventsViewLinkButton, HomeActionCard
+} from './styles';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEyeSlash, faCalendarAlt } from '@fortawesome/free-solid-svg-icons'
+import BlockImg from '../images/main.png';
+import GoogleImg from '../images/google.png';
+export default class Home extends Component {
+    constructor(props) {
+        super(props);
+        this.btnref = React.createRef();
+        this.rbtnref = React.createRef();
+        this.state = {
+            modalVisibility : false ,
+            joinModalVisible : false ,
+            error: null,
+            lerror : null ,
+            rerror : null ,
+            email: '',
+            lemail: '',
+            remail: '',
+            rpwd : '' ,
+            lpwd: '',
+            load: false,
+            rload: false,
+            password: '',
+            action: 'login',
+            propsname: this.props.uname,
+
+
+        };
+        document.title = "Home";
+        localStorage.clear();
+        this.handleChange = this.handleChange.bind(this);
+        this.handleReg = this.handleReg.bind(this);
+        // this.googleSignIn = this.googleSignIn.bind(this);
+        this.handleLog = this.handleLog.bind(this);
+        this.success = this.success.bind(this)
+    }
+
+
+    componentDidMount(props){
+
+        if(auth().currentUser && !auth().currentUser.displayName){
+            message.error({
+                content: 'Please Provide Your Name',
+                duration: [2]
+            })
+        }
+        // if(!this.state.props.uname){
+        //     message.error({
+        //         content: 'Please Provide Your Name',
+        //         duration: [5]
+        //     })
+        // } 
+
+
+
+    }
+
+    handleChange(event) {
+        this.setState({
+            [event.target.name]: event.target.value
+        });
+    }
+    success(){
+        this.setState({
+            modalVisibility: false,
+        })
+    }
+    async handleLog(event) {
+        event.preventDefault();
+        this.setState({ error: '' });
+        this.btnref.current.disabled = true;
+        this.setState({ lerror: '', load: true, });
+
+        if(this.state.lemail === ''){
+            this.setState({
+                lerror: 'Please Provide Email Address',
+                load: false
+            });
+            this.btnref.current.disabled = false;
+            return;
+        }
+        if(this.state.lpwd === ''){
+            this.setState({
+                lerror: 'Please Provide Password',
+                load: false,
+            });
+            this.btnref.current.disabled = false;
+            return;
+        }
+
+        try {
+            if (typeof (this.props.location.state) !== 'undefined') {
+                this.fromm = this.props.location.state.from.pathname;
+                localStorage.setItem('from', this.fromm);
+            }
+            await signin(this.state.lemail, this.state.lpwd);
+            this.setState({ lemail: '', lpwd: '' })
+            // window.location.replace('/Dashboard')
+            // this.props.history.push("/Dashboard");
+
+
+        } catch (error) {
+            this.setState({ error: error.message });
+            this.btnref.current.disabled = false;
+            var code = error.code;
+            was  errorr ;
+
+            if(code === 'auth/invalid-email'){
+                errorr = 'The Email is Invalid'
+            }
+            else if(code === 'auth/user-not-found'){
+                errorr = 'There is No User With this Email'
+            }
+            else if(code === 'auth/wrong-password'){
+                errorr = 'The Password is Wrong '
+            }
+            else{
+                errorr = 'Something is Wrong'
+            }
+
+            this.setState({ lerror: errorr, load: false });
+            this.btnref.current.disabled = false;
+        }
+    }
+    // async googleSignIn() {
+    //   try {
+    //     await signInWithGoogle();
+    //     this.state = {
+    //       user: auth().currentUser,
+    //     }
+    //   } catch (error) {
+    //     this.setState({ error: error.message });
+    //   }
+    // }
+    async handleReg(event) {
+        event.preventDefault();
+        this.setState({ error: '' });
+        this.rbtnref.current.disabled = true;
+        this.setState({ rerror: '', rload: true, });
+
+        if(this.state.remail === ''){
+            this.setState({
+                rerror: 'Please Provide Email Address',
+                rload: false
+            });
+            this.rbtnref.current.disabled = false;
+            return;
+        }
+        if(this.state.rpwd === ''){
+            this.setState({
+                rerror: 'Please Provide Password',
+                rload: false,
+            });
+            this.rbtnref.current.disabled = false;
+            return;
+        }
+
+        try {
+            await signup(this.state.remail, this.state.rpwd);
+            await signup(this.state.remail, this.state.rpwd)
+            this.props.history.push('/UserProfile')
+
+            this.setState({ remail: '', rpwd: '' })
+
+        } catch (error) {
+            this.setState({ error: error.message });
+            var code = error.code;
+            was  errorr ;
+            if(code === 'auth/email-already-in-use'){
+                errorr = 'The Given Email is Already in use'
+
+            }
+            else if(code === 'auth/invalid-email'){
+             errorr = 'The Given Email is Invalid'
+
+            }
+            else if(code === 'auth/weak-password'){
+                errorr = 'The Password is too Weak Choose Another'
+            }
+            else{
+                errorr = 'Something is Wrong'
+            }
+            this.setState({ rerror: errorr, rload: false });
+            this.rbtnref.current.disabled = false;
+        }
+    }
+
+    handleActionSelection = (actionType) => {
+        this.setState({
+            action: actionType
+        })
+    }
+    render() {
+        return (
+            <Container>
+                <Head HandleActionSelection={this.handleActionSelection} />
+                <HomeRowContainer className='row'>
+                    <div className='col-md-6 offset-md-1 col-md-offset-right-1' >
+                        <div>
+                            <p className='home-main-head'>
+                                Want to connect more
+                            </p>
+                            <p className='home-description'>
+                                Using ourapp people can connect more than 50 participants and we have provided more features.
+                                To see the features let's get started.
+
+                            </p>
+                        </div>
+                        <HomeImageContainer>
+                            <img src={BlockImg} alt='main-image' />
+                        </HomeImageContainer>
+                    </div>
+                    <div className='col-md-3  offset-md-1 col-md-offset-right-1'>
+                        {
+                            auth().currentUser &&
+                            <div>
+                                <HomeActionCard style={{ marginBottom: '1rem', }}>
+                                    <p> Let's get started</p>
+                                    <HomeConnectButton width='125px' height='32px' fontsize='14px'
+                                        onClick={() => this.setState({ modalVisibility: true })}
+                                    >Create meeting</HomeConnectButton>
+                                </HomeActionCard>
+                                <HomeActionCard>
+                                    <p> Want to join meeting?</p>
+                                    <HomeConnectButton width='125px' height='32px' fontsize='14px'
+                                        onClick={() => this.setState({ joinModalVisible: true })}
+                                    >Join meeting</HomeConnectButton>
+                                </HomeActionCard>
+                            </div>
+                        }
+                        {
+                            !auth().currentUser && this.state.action === 'register' &&
+                            <Form onSubmit={this.handleReg} className="auth-form">
+                                <Form.Group controlId="formGroupEmail">
+                                    <Form.Control name="remail" onChange={this.handleChange} value={this.state.remail} id="remail" type="email" placeholder="Enter email" />
+                                </Form.Group>
+                                <Form.Group controlId="formGroupPassword">
+                                    <Form.Control name="rpwd" onChange={this.handleChange} value={this.state.rpwd} id="rpwd" type="password" placeholder="Password" />
+                                </Form.Group>
+                                {this.state.error ? <p className="text-danger">{this.state.error}</p> : null}
+                                <Button type="submit" className='submit-button' >Register</Button>
+                                {this.state.rerror ?<strong> <p className="text-danger">{this.state.rerror}</p></strong> : null}
+                                <Button type="submit" ref={this.rbtnref} className='submit-button'>{this.state.rload ? 'Loading': 'Register'}</Button>
+                                <LogSuggestion>Already have account? <span onClick={() => this.handleActionSelection('login')}>Login</span></LogSuggestion>
+                                <Divider plain className='divider'>Or connect with</Divider>
+                                <HomeSignContainer>
+                                    <div className='google-icon' onClick={this.googleSignIn}>
+                                        <img src={GoogleImg} alt='google-image' />
+                                    </div>
+                                </HomeSignContainer>
+                            </Form>
+                        }
+                        {
+                            !auth().currentUser && this.state.action === 'login' &&
+                            <Form onSubmit={this.handleLog} className="auth-form">
+                                <Form.Group controlId="formGroupEmail">
+                                    <Form.Control name="lemail" onChange={this.handleChange} value={this.state.lemail} id="lemail" type="email" placeholder="Enter email" />
+                                </Form.Group>
+                                <Form.Group controlId="formGroupPassword">
+                                    <Form.Control name="lpwd" onChange={this.handleChange} value={this.state.lpwd} id="lpwd" type="password" placeholder="Password" />
+                                    <FontAwesomeIcon className='fa-icon' icon={faEyeSlash} />
+                                </Form.Group>
+                                {this.state.error ? <strong> <p className="text-danger">{this.state.error}</p></strong> : null}
+                                <Button type="submit" className='submit-button'>Login</Button>
+                                {this.state.lerror ? <strong> <p className="text-danger">{this.state.lerror}</p></strong> : null}
+                                <Button type="submit" ref={this.btnref} className='submit-button'>{this.state.load ? 'Loading' : 'Login'}</Button>
+                                <LogSuggestion>Don't have an account? <span onClick={() => this.handleActionSelection('register')}>Register</span></LogSuggestion>
+                                <Divider plain className='divider'>Or connect with</Divider>
+                                <HomeSignContainer>
+                                    <div className='google-icon' onClick={this.googleSignIn}>
+                                        <img src={GoogleImg} alt='google-image' />
+                                    </div>
+                                </HomeSignContainer>
+                            </Form>
+                        }
+                    </div>
+                </HomeRowContainer>
+                {auth().currentUser &&
+                <Tooltip placement="top" title={'View Events'}>
+                    <EventsViewLinkButton>
+                        <Link to='/MyEvents'>
+                            <FontAwesomeIcon className='fa-icon' icon={faCalendarAlt} />
+                        </Link>
+                    </EventsViewLinkButton>
+                </Tooltip>
+    }
+                {
+                    this.state.modalVisibility &&
+                    <CreateMeetModal
+                        success={this.success}
+                        visibility={this.state.modalVisibility}
+                        onClose={() => { this.setState({ modalVisibility: false }) }}
+                    />
+                }
+                {
+                    this.state.joinModalVisible &&
+                    <JoinMeetingModal
+                        visibility={this.state.joinModalVisible}
+                        onClose={() => { this.setState({ joinModalVisible: false }) }}
+                    />
+                }
+            </Container >
+        );
+    }
+};
+
+file 7:src/pages/UserProfile.jsx:
+import React, { Component } from "react";
+import Head from "../components/Head";
+import { auth } from "../config/fire";
+import { Input } from 'antd';
+import { Input, message } from 'antd';
+import { updateprof, updatephoto } from "../helpers/auth";
+import Loader from "../components/Loader";
+import { DashboardContainer, DashMainWrapper, DashProfContainer, DashButtons, DashFormDiv,HomeConnectButton } from './styles';
+export default class UserProfile extends Component {
+    constructor(props) {
+        super(props);
+        document.title = 'Dashboard';
+        this.state = {
+            user: auth().currentUser,
+            uname: auth().currentUser.displayName,
+            loading: true,
+            editEnable : false ,
+            props: props,
+
+        }
+        this.handleChange = this.handleChange.bind(this);
+        this.updateprofile = this.updateprofile.bind(this);
+        this.updatepropic = this.updatepropic.bind(this);
+    }
+
+    componentDidMount() {
+        if(!auth().currentUser.displayName){
+            message.error({
+                content: 'Please Provide Your Name',
+                duration: [3]
+            })
+        } 
+        this.setState({
+            loading: false,
+        })
+    }
+
+    async updateprofile(event) {
+        event.preventDefault();
+        this.setState({ error: '' });
+        this.setState({ error: '', loading: true });
+
+        try {
+            await updateprof(this.state.uname);
+
+            await updateprof(this.state.uname).then(() =>{
+                message.success({
+                    content: 'Name Changed',
+                    onClick: () =>{
+                    this.state.props.history.push('/')
+                }})
+                    this.setState({error: '', loading: false})
+            });
+        } catch (error) {
+            this.setState({ error: error.message });
+
+            this.setState({ error: error.message, loading: false });
+        }
+        this.setState({ editEnable: false })
+    }
+    async updatepropic(event) {
+        event.preventDefault();
+        this.setState({ error: '' });
+        try {
+            await updatephoto(this.state.upic);
+        } catch (error) {
+            this.setState({ error: error.message });
+        }
+    }
+    handleChange(event) {
+        this.setState({
+            [event.target.name]: event.target.value
+        });
+    }
+    render() {
+        return (
+            <DashboardContainer>
+                <Head />
+                {
+                    this.state.loading ? <Loader /> :
+                        <DashMainWrapper>
+                            <div className='profile-view-container'>
+                                {
+                                    !this.state.editEnable &&
+                                    <DashProfContainer>
+                                        <div className='prof-img-div'>
+export default class UserProfile extends Component {
+    constructor(props) {
+                                            <img src="https://i.pinimg.com/originals/73/16/f5/7316f550de9ca0045e3d8d98a5bb5e44.png" />
+                                        </div>
+                                        <div className='prof-details-div'>
+                                            <p className='prof-usename'>{this.state.user.displayName}</p>
+                                            <p className='prof-email'>{this.state.user.email}</p>
+                                            <p className='prof-usename'>{auth().currentUser.displayName}</p>
+                                            <p className='prof-email'>{auth().currentUser.email}</p>
+                                            <HomeConnectButton 
+                                            width='125px' height='32px' fontsize='14px'
+                                             onClick={() => this.setState({ editEnable: true })}>Edit Profile</HomeConnectButton>
+                                        </div>
+                                    </DashProfContainer>
+                                }
+                                {
+                                    this.state.editEnable &&
+                                    <div className='edit-extend'>
+                                        <DashProfContainer>
+                                            <div className='prof-img-div'>
+                                                <img src="https://i.pinimg.com/originals/73/16/f5/7316f550de9ca0045e3d8d98a5bb5e44.png" />
+                                            </div>
+                                            {!this.state.user.photoURL ?
+                                            {!auth().currentUser.photoURL ?
+                                                <div>
+                                                    <label>
+                                                        < div className='file-upload-label'>Change Picture</div>
+                                        </div>
+                                    </DashProfContainer>
+                                }
+                                {
+                                    this.state.editEnable &&
+                                    <div className='edit-extend'>
+                                        <DashProfContainer>
+                                                </div>
+
+                                                : <div className='prof-img-div'>
+                                                    <img src={this.state.user.photoURL} />
+                                                    <img src={auth().currentUser.photoURL} />
+                                                </div>
+                                            }
+
+                                        </DashProfContainer>
+                                        <DashFormDiv>
+                                            <label>Username :</label>
+                                            <Input placeholder='enter your username' id="uname" onChange={this.handleChange} name="uname" 
+                                            // value={this.state.uname}
+                                            value={this.state.user.displayName}
+                                            value={this.state.uname}
+                                             />
+                                            <label>Email Address :</label>
+                                            <Input placeholder='enter emailid' value={this.state.user.email} />
+                                            <text>{auth().currentUser.email}</text>
+                                            <HomeConnectButton width='125px' height='32px' 
+                                            fontsize='14px' 
+                                            style={{marginTop:'20px'}}
+                                                        <input id="upic" ref="upload" style={{ display: 'none' }} onChange={this.handleChange} accept="image/*" type="file" name="upic" value={this.state.upic}></input>
+                                                    </label>
+
